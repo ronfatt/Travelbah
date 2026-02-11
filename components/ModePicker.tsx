@@ -17,7 +17,7 @@ export function ModePicker({ value, onChange }: { value: TravelMode; onChange: (
           type="button"
           onClick={() => onChange(opt.value)}
           className={`rounded-xl border px-4 py-3 text-left transition ${
-            value === opt.value ? "border-ocean bg-ocean text-white" : "border-slate-300 bg-white/70 hover:border-ocean"
+            value === opt.value ? "border-primary bg-primary text-white" : "border-border bg-card hover:border-primary"
           }`}
         >
           <span className="mr-2">{opt.emoji}</span>

@@ -3,8 +3,8 @@ import "./globals.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 export const metadata: Metadata = {
-  title: "TravelBah Tawau Demo",
-  description: "Investor demo MVP for smart trips in Tawau"
+  title: "TravelBah",
+  description: "Tawau Edition - AI-guided local journey."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

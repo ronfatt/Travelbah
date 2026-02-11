@@ -9,14 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        sand: "#f6efe0",
-        ocean: "#1b657d",
-        sunset: "#f78a4d",
-        leaf: "#4f7a57",
-        ink: "#1f2937"
+        "primary-dark": "var(--color-primary-dark)",
+        primary: "var(--color-primary)",
+        accent: "var(--color-accent)",
+        bg: "var(--color-bg)",
+        card: "var(--color-card)",
+        border: "var(--color-border)",
+        "text-primary": "var(--color-text-primary)",
+        "text-secondary": "var(--color-text-secondary)",
+        sand: "var(--color-bg)",
+        ocean: "var(--color-primary)",
+        sunset: "var(--color-accent)",
+        leaf: "var(--color-primary-dark)",
+        ink: "var(--color-text-primary)"
       },
       boxShadow: {
-        card: "0 12px 30px -16px rgba(16,24,40,.35)"
+        card: "0 16px 44px -26px rgba(15, 61, 62, 0.38)"
       }
     }
   },
