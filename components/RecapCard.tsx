@@ -72,6 +72,7 @@ export function RecapCard({
   stops,
   summary,
   staticMapUrl,
+  polyline,
   distanceKm,
   etaMinutes,
   surpriseCount,
@@ -82,6 +83,7 @@ export function RecapCard({
   stops: Poi[];
   summary: string;
   staticMapUrl?: string;
+  polyline: [number, number][];
   distanceKm?: number;
   etaMinutes?: number;
   surpriseCount?: number;
@@ -128,8 +130,8 @@ export function RecapCard({
   }
 
   const routePreview = useMemo(() => {
-    // Build a lightweight local SVG route preview so map never disappears.
-    const points = stops.map((s) => [s.lng, s.lat] as [number, number]);
+    // Build a lightweight local SVG route preview from full polyline so map never disappears.
+    const points = polyline;
     const all = points.length ? points : [];
     if (!all.length) return null;
     const lngs = all.map((p) => p[0]);
@@ -149,7 +151,7 @@ export function RecapCard({
     const xy = all.map(toXY);
     const path = xy.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
     return { xy, path, w, h };
-  }, [stops]);
+  }, [polyline]);
 
   return (
     <div>

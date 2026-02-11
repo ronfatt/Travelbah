@@ -97,6 +97,7 @@ export default function RecapPage() {
         stops={data.stops}
         summary={data.summary}
         staticMapUrl={staticMapUrl}
+        polyline={data.polyline}
         distanceKm={distanceKm}
         etaMinutes={etaMinutes}
         surpriseCount={data.surpriseDrop ? 1 : 0}
