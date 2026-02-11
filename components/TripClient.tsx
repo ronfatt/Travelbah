@@ -31,6 +31,14 @@ const DISH_POOL = [
   "Claypot Ginger Chicken",
   "Nasi Campur Local Set"
 ];
+const DISH_PHOTOS = [
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1565299585323-38174c4a6c5b?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+];
 
 function seededIndex(seed: string, max: number) {
   return seed.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % max;
@@ -39,6 +47,11 @@ function seededIndex(seed: string, max: number) {
 function top3Dishes(stop: Poi) {
   const base = seededIndex(stop.id, DISH_POOL.length);
   return [DISH_POOL[base], DISH_POOL[(base + 2) % DISH_POOL.length], DISH_POOL[(base + 4) % DISH_POOL.length]];
+}
+
+function top3DishPhotos(stop: Poi) {
+  const base = seededIndex(stop.id, DISH_PHOTOS.length);
+  return [DISH_PHOTOS[base], DISH_PHOTOS[(base + 2) % DISH_PHOTOS.length], DISH_PHOTOS[(base + 4) % DISH_PHOTOS.length]];
 }
 
 function whereLine(stop: Poi) {
@@ -252,6 +265,17 @@ export function TripClient({
                         <li key={`${stop.id}-${dish}`}>• {dish}</li>
                       ))}
                     </ul>
+                    <div className="mt-2 grid grid-cols-3 gap-1.5">
+                      {top3DishPhotos(stop).map((src, i) => (
+                        <img
+                          key={`${stop.id}-dish-photo-${i}`}
+                          src={src}
+                          alt={`${stop.name} dish ${i + 1}`}
+                          className="h-14 w-full rounded-md object-cover"
+                          loading="lazy"
+                        />
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <p className="mt-1 text-xs text-text-secondary">Recommended as a {stop.category} stop along your route.</p>
