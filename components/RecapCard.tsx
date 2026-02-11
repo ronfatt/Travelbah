@@ -90,6 +90,7 @@ export function RecapCard({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const storyRef = useRef<HTMLDivElement | null>(null);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
 
   const aiLine = useMemo(
     () => aiSummaryByMode(mode, stops.length),
@@ -126,10 +127,34 @@ export function RecapCard({
     await navigator.clipboard.writeText(window.location.href);
   }
 
+  const routePreview = useMemo(() => {
+    // Build a lightweight local SVG route preview so map never disappears.
+    const points = stops.map((s) => [s.lng, s.lat] as [number, number]);
+    const all = points.length ? points : [];
+    if (!all.length) return null;
+    const lngs = all.map((p) => p[0]);
+    const lats = all.map((p) => p[1]);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const w = 900;
+    const h = 400;
+    const pad = 32;
+    const toXY = ([lng, lat]: [number, number]) => {
+      const x = pad + ((lng - minLng) / Math.max(0.0001, maxLng - minLng)) * (w - pad * 2);
+      const y = pad + (1 - (lat - minLat) / Math.max(0.0001, maxLat - minLat)) * (h - pad * 2);
+      return [x, y] as [number, number];
+    };
+    const xy = all.map(toXY);
+    const path = xy.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+    return { xy, path, w, h };
+  }, [stops]);
+
   return (
     <div>
       <div className="mx-auto w-full max-w-[440px] rounded-[28px] bg-gradient-to-br from-[#4f46e5] via-[#6366f1] to-[#14b8a6] p-[2px] shadow-card">
-        <div ref={cardRef} className="aspect-[4/5] overflow-hidden rounded-[26px] bg-white/92 p-4 backdrop-blur-[14px]">
+        <div ref={cardRef} className="rounded-[26px] bg-white/92 p-4 backdrop-blur-[14px]">
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#3b82f6] p-3">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.15)_40%,rgba(0,0,0,0)_100%)]" />
             <div className="relative flex items-start justify-between">
@@ -148,10 +173,32 @@ export function RecapCard({
           </div>
 
           <div className="relative mt-3 overflow-hidden rounded-2xl">
-            {staticMapUrl ? (
-              <img src={staticMapUrl} alt="Route map" className="h-40 w-full object-cover" />
+            {staticMapUrl && !mapFailed ? (
+              <img src={staticMapUrl} alt="Route map" className="h-40 w-full object-cover" onError={() => setMapFailed(true)} />
             ) : (
-              <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]" />
+              <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]">
+                {routePreview ? (
+                  <svg viewBox={`0 0 ${routePreview.w} ${routePreview.h}`} className="h-full w-full opacity-90">
+                    <defs>
+                      <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#4F46E5" />
+                        <stop offset="55%" stopColor="#6366F1" />
+                        <stop offset="100%" stopColor="#14B8A6" />
+                      </linearGradient>
+                    </defs>
+                    <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="10" strokeOpacity="0.35" fill="none" />
+                    <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="4.5" fill="none" />
+                    {routePreview.xy.slice(0, 6).map((p, idx) => (
+                      <g key={`pt-${idx}`}>
+                        <circle cx={p[0]} cy={p[1]} r="11" fill="#14B8A6" />
+                        <text x={p[0]} y={p[1] + 3} textAnchor="middle" fontSize="10" fill="#fff" fontWeight="700">
+                          {idx + 1}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                ) : null}
+              </div>
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/52 via-[#0f172a]/12 to-transparent" />
             <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
@@ -191,7 +238,7 @@ export function RecapCard({
           </div>
 
           <div className="mt-2 grid gap-1.5">
-            {stops.slice(0, 4).map((s, idx) => (
+            {stops.map((s, idx) => (
               <div key={s.id} className="rounded-xl border border-border bg-white/85 px-2 py-1.5 text-xs">
                 <p className="font-semibold text-text-primary">
                   {idx + 1}️⃣ {s.name}
