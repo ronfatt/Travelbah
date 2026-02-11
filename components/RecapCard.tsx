@@ -130,18 +130,21 @@ export function RecapCard({
     <div>
       <div className="mx-auto w-full max-w-[440px] rounded-[28px] bg-gradient-to-br from-[#4f46e5] via-[#6366f1] to-[#14b8a6] p-[2px] shadow-card">
         <div ref={cardRef} className="aspect-[4/5] overflow-hidden rounded-[26px] bg-white/92 p-4 backdrop-blur-[14px]">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-text-secondary">TravelBah Journey Story</p>
-              <h2 className="mt-1 text-[1.5rem] font-extrabold leading-tight text-text-primary">{headline}</h2>
-              <p className="mt-1 text-[11px] font-semibold text-[#4f46e5]">Journey Mood: {moodLine(mode)}</p>
-              <p className="mt-1 text-xs text-text-secondary">
-                {origin} → {destination}
-                <br />
-                {stops.length} stops · {surpriseCount ?? 0} surprise
-              </p>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#3b82f6] p-3">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.15)_40%,rgba(0,0,0,0)_100%)]" />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/85">TravelBah Journey Story</p>
+                <h2 className="mt-1 text-[1.5rem] font-extrabold leading-tight text-[#F8FAFF] [text-shadow:0_2px_12px_rgba(0,0,0,0.25)]">{headline}</h2>
+                <p className="mt-1 inline-flex rounded-full bg-white/15 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-[8px]">
+                  {moodLine(mode)}
+                </p>
+                <p className="mt-1 inline-flex rounded-full bg-white/15 px-2 py-1 text-xs text-white/90 backdrop-blur-[8px]">
+                  {origin} → {destination} · {stops.length} stops · {surpriseCount ?? 0} surprise
+                </p>
+              </div>
+              <span className="rounded-full border border-white/40 bg-white/20 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-[8px]">TravelBah · Tawau Edition</span>
             </div>
-            <span className="rounded-full border border-white/80 bg-white/70 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">TravelBah · Tawau Edition</span>
           </div>
 
           <div className="relative mt-3 overflow-hidden rounded-2xl">
@@ -150,9 +153,9 @@ export function RecapCard({
             ) : (
               <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]" />
             )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/45 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/52 via-[#0f172a]/12 to-transparent" />
             <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
-            <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90">TravelBah watermark</p>
+            <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah watermark</p>
             <div className="absolute bottom-2 left-3 flex gap-1">
               {stops.slice(0, 3).map((s, idx) => (
                 <span key={s.id} className="rounded-full bg-[#4f46e5]/85 px-2 py-0.5 text-[10px] font-semibold text-white">
@@ -160,7 +163,7 @@ export function RecapCard({
                 </span>
               ))}
             </div>
-            <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90">TravelBah · Tawau Edition</p>
+            <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah · Tawau Edition</p>
           </div>
 
           <div className="mt-3 rounded-xl border border-border bg-white/80 p-2 text-xs text-text-primary">
