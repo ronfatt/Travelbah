@@ -21,6 +21,30 @@ const labels = {
   showScenic: "Show scenic option"
 };
 
+const DISH_POOL = [
+  "Signature Seafood Noodles",
+  "Charcoal Satay Platter",
+  "Crispy Butter Prawns",
+  "Hainan Chicken Rice",
+  "Kopi + Kaya Toast",
+  "Spicy Sambal Fish",
+  "Claypot Ginger Chicken",
+  "Nasi Campur Local Set"
+];
+
+function seededIndex(seed: string, max: number) {
+  return seed.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % max;
+}
+
+function top3Dishes(stop: Poi) {
+  const base = seededIndex(stop.id, DISH_POOL.length);
+  return [DISH_POOL[base], DISH_POOL[(base + 2) % DISH_POOL.length], DISH_POOL[(base + 4) % DISH_POOL.length]];
+}
+
+function whereLine(stop: Poi) {
+  return `Near ${stop.lat.toFixed(3)}, ${stop.lng.toFixed(3)} · ${stop.category}`;
+}
+
 function aiIntro(mode: TravelMode, eta: number) {
   if (mode === "food") {
     return "You'll hit mild traffic near Mile 3, but nothing serious. I see 3 solid local food spots and 2 scenic stops along your path. Want me to line them up for you?";
@@ -211,6 +235,50 @@ export function TripClient({
               <p className="text-xs text-text-secondary">{labels.simulate}</p>
             </div>
           ) : null}
+
+          <div className="mb-3 max-h-56 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
+            {activeStops.map((stop, idx) => (
+              <div key={stop.id} className="mb-2 rounded-xl border border-border bg-white/85 p-2 text-sm">
+                <p className="font-semibold text-text-primary">
+                  {idx + 1}. {stop.name}
+                </p>
+                <p className="mt-0.5 text-xs text-text-secondary">📍 {whereLine(stop)}</p>
+
+                {stop.category === "food" ? (
+                  <div className="mt-1 rounded-lg border border-border bg-white p-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">Top 3 Dishes</p>
+                    <ul className="mt-1 text-xs text-text-primary">
+                      {top3Dishes(stop).map((dish) => (
+                        <li key={`${stop.id}-${dish}`}>• {dish}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-text-secondary">Recommended as a {stop.category} stop along your route.</p>
+                )}
+
+                <div className="mt-2 flex gap-2">
+                  <button
+                    className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
+                    onClick={() =>
+                      setChatLog((prev) => [...prev, { role: "user", text: `Add ${stop.name}.` }, { role: "assistant", text: "Added. I’ll keep the route balanced." }])
+                    }
+                  >
+                    Add
+                  </button>
+                  <button
+                    className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
+                    onClick={() => {
+                      setActiveStops((prev) => prev.filter((s) => s.id !== stop.id));
+                      setChatLog((prev) => [...prev, { role: "user", text: `Skip ${stop.name}.` }, { role: "assistant", text: "Skipped. Keeping route efficient." }]);
+                    }}
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div className="mb-2 max-h-64 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
             {chatLog.map((line, idx) => (
