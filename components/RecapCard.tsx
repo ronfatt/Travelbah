@@ -134,25 +134,42 @@ export function RecapCard({
     // Prefer full polyline; if missing, fall back to stop coordinates.
     const points = polyline.length > 1 ? polyline : stops.map((s) => [s.lng, s.lat] as [number, number]);
     const all = points.length ? points : [];
-    if (!all.length) return null;
-    const lngs = all.map((p) => p[0]);
-    const lats = all.map((p) => p[1]);
+    const w = 900;
+    const h = 400;
+    const pad = 32;
+
+    const procedural = () => {
+      const n = Math.max(6, stops.length + 2);
+      const xy = Array.from({ length: n }, (_, i) => {
+        const t = i / Math.max(1, n - 1);
+        const x = pad + t * (w - pad * 2);
+        const y = h - pad - t * (h - pad * 2) + Math.sin(i * 1.22) * 30;
+        return [x, y] as [number, number];
+      });
+      const path = xy.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+      return { xy, path, w, h };
+    };
+
+    if (!all.length) return procedural();
+    const lngs = all.map((p) => p[0]).filter((x) => Number.isFinite(x));
+    const lats = all.map((p) => p[1]).filter((x) => Number.isFinite(x));
+    if (!lngs.length || !lats.length) return procedural();
     const minLng = Math.min(...lngs);
     const maxLng = Math.max(...lngs);
     const minLat = Math.min(...lats);
     const maxLat = Math.max(...lats);
-    const w = 900;
-    const h = 400;
-    const pad = 32;
+    if (Math.abs(maxLng - minLng) < 0.000001 || Math.abs(maxLat - minLat) < 0.000001) return procedural();
+
     const toXY = ([lng, lat]: [number, number]) => {
       const x = pad + ((lng - minLng) / Math.max(0.0001, maxLng - minLng)) * (w - pad * 2);
       const y = pad + (1 - (lat - minLat) / Math.max(0.0001, maxLat - minLat)) * (h - pad * 2);
       return [x, y] as [number, number];
     };
     const xy = all.map(toXY);
+    if (xy.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return procedural();
     const path = xy.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
     return { xy, path, w, h };
-  }, [polyline]);
+  }, [polyline, stops]);
 
   return (
     <div>
