@@ -3,35 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --color-primary-dark: #0f3d3e;
-  --color-primary: #165e63;
-  --color-accent: #f59e0b;
-  --color-bg: #f6f1e9;
-  --color-card: #ffffff;
-  --color-border: #e5e7eb;
+  --color-primary-dark: #3730a3;
+  --color-primary: #4f46e5;
+  --color-accent: #14b8a6;
+  --color-bg: #f8faff;
+  --color-card: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.58);
   --color-text-primary: #1f2937;
   --color-text-secondary: #6b7280;
 }
 
 body {
+  position: relative;
   background:
-    repeating-linear-gradient(
-      140deg,
-      rgba(22, 94, 99, 0.05) 0px,
-      rgba(22, 94, 99, 0.05) 1px,
-      transparent 1px,
-      transparent 42px
-    ),
-    repeating-linear-gradient(
-      40deg,
-      rgba(15, 61, 62, 0.045) 0px,
-      rgba(15, 61, 62, 0.045) 1px,
-      transparent 1px,
-      transparent 36px
-    ),
-    radial-gradient(1200px 480px at 90% -10%, rgba(22, 94, 99, 0.24), transparent 60%),
-    radial-gradient(900px 420px at -10% 100%, rgba(245, 158, 11, 0.18), transparent 55%),
-    linear-gradient(165deg, #f9f5ee 0%, var(--color-bg) 48%, #edf4f4 100%);
+    radial-gradient(700px 420px at 50% 24%, rgba(79, 70, 229, 0.11), transparent 65%),
+    radial-gradient(580px 360px at 74% 72%, rgba(20, 184, 166, 0.08), transparent 68%),
+    repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.038) 0px, rgba(79, 70, 229, 0.038) 1px, transparent 1px, transparent 34px),
+    repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.032) 0px, rgba(79, 70, 229, 0.032) 1px, transparent 1px, transparent 34px),
+    linear-gradient(135deg, #f8faff 0%, #eef2ff 40%, #f4f7ff 100%);
   color: var(--color-text-primary);
   font-family: Inter, sans-serif;
   min-height: 100vh;
@@ -78,5 +67,45 @@ button:disabled {
   }
   50% {
     transform: translateY(-3px);
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.gradient-primary {
+  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+}
+
+.title-gradient {
+  background: linear-gradient(90deg, #4f46e5, #14b8a6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sparkle-dot {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #8b5cf6 55%, #4f46e5 100%);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+  animation: sparkle-float 1.8s ease-in-out infinite;
+}
+
+@keyframes sparkle-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: translateY(-2px) scale(1.08);
+    opacity: 1;
   }
 }

@@ -64,9 +64,12 @@ export default function LandingPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-4 py-8">
-      <div className="rounded-2xl border border-border bg-card/90 p-6 shadow-card sm:p-8">
+      <div className="glass-card rounded-2xl p-6 shadow-card sm:p-8">
         <section className="mx-auto max-w-2xl text-center">
-          <h1 className="text-[2.5rem] font-semibold leading-tight text-primary-dark">TravelBah</h1>
+          <h1 className="text-[2.5rem] font-bold leading-tight tracking-[0.02em]">
+            <span className="title-gradient">TravelBah</span>
+            <span className="sparkle-dot" />
+          </h1>
           <p className="mt-2 text-xl font-medium text-text-primary">Tawau Edition — AI Local Guide, Bah.</p>
           <p className="mt-2 text-sm text-text-secondary">Less tourist traps. More real stuff, bah.</p>
           <p className="mt-3 text-sm text-text-secondary">Tell us where you are and where you&apos;re heading — we&apos;ll handle the rest.</p>
@@ -77,7 +80,7 @@ export default function LandingPage() {
             <label className="text-sm font-medium text-text-primary">{t.chooseLanguage}</label>
             <div className="relative mt-2 grid grid-cols-3 rounded-[14px] border border-border bg-transparent p-1">
               <span
-                className="pointer-events-none absolute bottom-1 left-1 top-1 rounded-[10px] bg-accent transition-transform duration-300"
+                className="pointer-events-none absolute bottom-1 left-1 top-1 rounded-[10px] gradient-primary transition-transform duration-300"
                 style={{ width: "calc(33.333% - 0.34rem)", transform: `translateX(calc(${activeLangIndex * 100}% + ${activeLangIndex * 0.16}rem))` }}
               />
               {languageOptions.map((opt) => (
@@ -101,9 +104,9 @@ export default function LandingPage() {
             <input
               value={origin}
               onChange={(e) => setOrigin(e.target.value)}
-              className="flex-1 rounded-[14px] border border-border bg-card p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(22,94,99,0.12)]"
+              className="flex-1 rounded-[14px] border border-border bg-white/70 p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
             />
-            <button type="button" onClick={useLocation} className="travelbah-lift rounded-[14px] border border-border bg-card px-4 text-lg" aria-label="Use current location">
+            <button type="button" onClick={useLocation} className="travelbah-lift rounded-[14px] border border-border bg-white/70 px-4 text-lg" aria-label="Use current location">
               📍
             </button>
           </div>
@@ -112,7 +115,7 @@ export default function LandingPage() {
           <input
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
-            className="rounded-[14px] border border-border bg-card p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(22,94,99,0.12)]"
+            className="rounded-[14px] border border-border bg-white/70 p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
           />
 
           <div className="mt-1">
@@ -120,25 +123,25 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-text-secondary">{modeHint}</p>
 
-          <button onClick={go} className="travelbah-lift mt-1 rounded-[18px] bg-primary px-5 py-4 text-base font-semibold text-white shadow-card hover:bg-primary-dark">
+          <button onClick={go} className="travelbah-lift gradient-primary mt-1 rounded-full px-6 py-4 text-base font-semibold text-white">
             👉 Plan My Route
           </button>
           <p className="text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
 
-          <p className="rounded-2xl border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
+          <p className="glass-card rounded-2xl px-4 py-3 text-sm text-text-secondary">
             {t.guidePrefix}: {line}
           </p>
         </div>
       </div>
 
-      <aside className="fixed bottom-4 right-4 z-20 w-[320px] rounded-2xl border border-border bg-card/95 p-4 shadow-card">
+      <aside className="glass-card fixed bottom-4 right-4 z-20 w-[320px] rounded-2xl p-4 shadow-card">
         <p className="text-sm font-semibold text-text-primary">💬 Ask TravelBah</p>
         <input
           value={quickAsk}
           onChange={(e) => setQuickAsk(e.target.value)}
-          className="mt-2 w-full rounded-[14px] border border-border bg-card p-[12px] text-sm text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(22,94,99,0.12)]"
+          className="mt-2 w-full rounded-[14px] border border-border bg-white/70 p-[12px] text-sm text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
         />
-        <button onClick={askTravelBah} className="travelbah-lift mt-2 w-full rounded-[14px] bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+        <button onClick={askTravelBah} className="travelbah-lift gradient-primary mt-2 w-full rounded-full px-3 py-2 text-sm font-semibold text-white">
           Ask
         </button>
         {quickReply ? <p className="mt-2 text-sm text-text-secondary">{quickReply}</p> : null}
