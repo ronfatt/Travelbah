@@ -24,7 +24,7 @@ const config: Config = {
         ink: "var(--color-text-primary)"
       },
       boxShadow: {
-        card: "0 16px 44px -26px rgba(15, 61, 62, 0.38)"
+        card: "0 10px 30px rgba(0,0,0,0.08)"
       }
     }
   },

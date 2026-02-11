@@ -4,7 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 export const metadata: Metadata = {
   title: "TravelBah",
-  description: "Tawau Edition - AI-guided local journey."
+  description: "Tawau Edition — AI-guided local journey."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

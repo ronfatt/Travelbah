@@ -2,10 +2,10 @@
 
 import { TravelMode } from "@/lib/types";
 
-const options: Array<{ value: TravelMode; label: string; emoji: string }> = [
-  { value: "food", label: "Food-first", emoji: "🍜" },
-  { value: "chill", label: "Chill", emoji: "😌" },
-  { value: "efficient", label: "Efficient", emoji: "⚡" }
+const options: Array<{ value: TravelMode; label: string; emoji: string; desc: string }> = [
+  { value: "food", label: "Food-first", emoji: "🍜", desc: "Eat your way into town" },
+  { value: "chill", label: "Chill", emoji: "😌", desc: "Scenic, relaxed, no rush" },
+  { value: "efficient", label: "Efficient", emoji: "⚡", desc: "Fast, optimized, minimal stops" }
 ];
 
 export function ModePicker({ value, onChange }: { value: TravelMode; onChange: (mode: TravelMode) => void }) {
@@ -16,12 +16,17 @@ export function ModePicker({ value, onChange }: { value: TravelMode; onChange: (
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`rounded-xl border px-4 py-3 text-left transition ${
-            value === opt.value ? "border-primary bg-primary text-white" : "border-border bg-card hover:border-primary"
+          className={`travelbah-lift rounded-2xl border px-4 py-4 text-left transition-colors ${
+            value === opt.value
+              ? "border-primary bg-primary text-white shadow-card"
+              : "border-border bg-card text-text-primary hover:bg-[#f8f5ef]"
           }`}
         >
-          <span className="mr-2">{opt.emoji}</span>
-          <span>{opt.label}</span>
+          <p className="text-base font-semibold">
+            <span className="mr-2">{opt.emoji}</span>
+            {opt.label}
+          </p>
+          <p className={`mt-1 text-xs ${value === opt.value ? "text-white/90" : "text-text-secondary"}`}>{opt.desc}</p>
         </button>
       ))}
     </div>

@@ -16,7 +16,7 @@ export const uiText = {
     chooseLanguage: "Language",
     languageHint: "AI replies will follow this language.",
     guidePrefix: "Guide",
-    defaultLandingGuide: "Tell me your start and destination, I will line up a local-friendly route.",
+    defaultLandingGuide: "Hi 👋 Tell me your start and destination — I'll line up a local-friendly route for you.",
     locationCaptured: "Nice, got your live location. Pick a mode and go.",
     generatingRoute: "Nice choice. {mode} mode, now generating your route..."
   },

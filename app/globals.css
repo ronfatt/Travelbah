@@ -15,14 +15,68 @@
 
 body {
   background:
+    repeating-linear-gradient(
+      140deg,
+      rgba(22, 94, 99, 0.05) 0px,
+      rgba(22, 94, 99, 0.05) 1px,
+      transparent 1px,
+      transparent 42px
+    ),
+    repeating-linear-gradient(
+      40deg,
+      rgba(15, 61, 62, 0.045) 0px,
+      rgba(15, 61, 62, 0.045) 1px,
+      transparent 1px,
+      transparent 36px
+    ),
     radial-gradient(1200px 480px at 90% -10%, rgba(22, 94, 99, 0.24), transparent 60%),
     radial-gradient(900px 420px at -10% 100%, rgba(245, 158, 11, 0.18), transparent 55%),
     linear-gradient(165deg, #f9f5ee 0%, var(--color-bg) 48%, #edf4f4 100%);
   color: var(--color-text-primary);
+  font-family: Inter, sans-serif;
   min-height: 100vh;
 }
 
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.travelbah-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.travelbah-lift:hover {
+  transform: translateY(-2px);
+}
+
+.travelbah-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+  animation: marker-bounce 1.6s ease-in-out infinite;
+}
+
+.travelbah-marker--origin {
+  background: var(--color-primary-dark);
+}
+
+.travelbah-marker--destination {
+  background: var(--color-primary);
+}
+
+.travelbah-marker--stop {
+  background: var(--color-accent);
+}
+
+@keyframes marker-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }

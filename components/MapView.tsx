@@ -47,14 +47,23 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
         id: "route-line",
         type: "line",
         source: "route",
-        paint: { "line-color": "#f78a4d", "line-width": 5 }
+        paint: { "line-color": "#F59E0B", "line-width": 5 }
       });
 
-      const originMarker = new mapboxgl.Marker({ color: "#1b657d" }).setLngLat(origin).addTo(mapRef.current);
-      const destinationMarker = new mapboxgl.Marker({ color: "#4f7a57" }).setLngLat(destination).addTo(mapRef.current);
+      const createMarkerElement = (kind: "origin" | "destination" | "stop", delayMs = 0) => {
+        const el = document.createElement("div");
+        el.className = `travelbah-marker travelbah-marker--${kind}`;
+        el.style.animationDelay = `${delayMs}ms`;
+        return el;
+      };
+
+      const originMarker = new mapboxgl.Marker({ element: createMarkerElement("origin", 0) }).setLngLat(origin).addTo(mapRef.current);
+      const destinationMarker = new mapboxgl.Marker({ element: createMarkerElement("destination", 180) }).setLngLat(destination).addTo(mapRef.current);
       markersRef.current = [originMarker, destinationMarker];
-      stops.forEach((stop) => {
-        const marker = new mapboxgl.Marker({ color: "#111827" }).setLngLat([stop.lng, stop.lat]).addTo(mapRef.current!);
+      stops.forEach((stop, idx) => {
+        const marker = new mapboxgl.Marker({ element: createMarkerElement("stop", 280 + idx * 45) })
+          .setLngLat([stop.lng, stop.lat])
+          .addTo(mapRef.current!);
         markersRef.current.push(marker);
       });
 
@@ -73,7 +82,7 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
 
   if (!token) {
     return (
-      <div className="flex h-full min-h-[380px] items-center justify-center rounded-2xl border border-dashed border-slate-400 bg-white/30 p-6 text-center text-sm text-slate-700">
+      <div className="flex h-full min-h-[380px] items-center justify-center rounded-2xl border border-dashed border-border bg-card/30 p-6 text-center text-sm text-text-secondary">
         Set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to render the live map. Demo logic still works without it.
       </div>
     );
