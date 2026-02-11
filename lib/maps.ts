@@ -10,6 +10,17 @@ const fallbackPlaces: Record<string, LngLat> = {
   kk: [116.074, 5.980]
 };
 
+function inferSabahPlace(rawPlace: string): LngLat | null {
+  const place = rawPlace.trim().toLowerCase();
+  if (place in fallbackPlaces) return fallbackPlaces[place];
+  if (place.includes("tawau airport")) return fallbackPlaces["tawau airport"];
+  if (place.includes("tawau town")) return fallbackPlaces["tawau town"];
+  if (place.includes("tawau")) return fallbackPlaces.tawau;
+  if (place.includes("semporna")) return fallbackPlaces.semporna;
+  if (place === "kk" || place.includes("kota kinabalu")) return fallbackPlaces.kk;
+  return null;
+}
+
 export async function geocode(place: string): Promise<LngLat> {
   const directCoord = place.match(/(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)/);
   if (directCoord) {
@@ -18,9 +29,16 @@ export async function geocode(place: string): Promise<LngLat> {
     if (!Number.isNaN(lat) && !Number.isNaN(lng)) return [lng, lat];
   }
 
+  const inferred = inferSabahPlace(place);
+  if (inferred) return inferred;
+
   const token = process.env.MAPBOX_ACCESS_TOKEN;
   if (token) {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(place)}.json?limit=1&access_token=${token}`;
+    const sabahBbox = "115.7,4.0,119.4,7.4";
+    const sabahProximity = "117.889,4.244";
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      place
+    )}.json?limit=1&country=MY&bbox=${sabahBbox}&proximity=${sabahProximity}&access_token=${token}`;
     const res = await fetch(url, { cache: "no-store" });
     if (res.ok) {
       const data = (await res.json()) as { features?: Array<{ center: [number, number] }> };
