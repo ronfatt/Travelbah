@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { RecapCard } from "@/components/RecapCard";
-import { Poi, TravelMode } from "@/lib/types";
+import { Poi, TravelLanguage, TravelMode } from "@/lib/types";
+import { normalizeLanguage } from "@/lib/i18n";
 import { haversineKm } from "@/lib/scoring";
 
 type RecapPayload = {
@@ -15,6 +16,7 @@ type RecapPayload = {
   etaMinutes?: number;
   surpriseDrop?: Poi;
   mode?: TravelMode;
+  language?: TravelLanguage;
 };
 
 function computeDistanceKm(polyline: [number, number][]) {
@@ -42,6 +44,7 @@ export default function RecapPage() {
       </main>
     );
   }
+  const language = normalizeLanguage(data.language);
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const featureCollection = {
@@ -90,7 +93,9 @@ export default function RecapPage() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-      <h1 className="mb-4 text-2xl font-bold">TravelBah Journey Story</h1>
+      <h1 className="mb-4 text-2xl font-bold">
+        {language === "zh" ? "TravelBah 旅程故事" : language === "ms" ? "Kisah Perjalanan TravelBah" : "TravelBah Journey Story"}
+      </h1>
       <RecapCard
         origin={data.origin}
         destination={data.destination}
@@ -102,6 +107,7 @@ export default function RecapPage() {
         etaMinutes={etaMinutes}
         surpriseCount={data.surpriseDrop ? 1 : 0}
         mode={data.mode ?? "food"}
+        language={language}
       />
     </main>
   );
