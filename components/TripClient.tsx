@@ -6,6 +6,39 @@ import { MapView } from "@/components/MapView";
 import { ContextEvent, RoutePlan, TravelLanguage, TravelMode } from "@/lib/types";
 import { recapSummary } from "@/lib/prompt";
 
+const FOOD_PHOTOS = [
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1565299585323-38174c4a6c5b?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+];
+
+function seedFromId(id: string) {
+  return id.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+}
+
+function bestFoodsForStop(stopId: string) {
+  const dishPool = [
+    "Signature Seafood Noodles",
+    "Charcoal Satay Platter",
+    "Crispy Butter Prawns",
+    "Hainan Chicken Rice",
+    "Teh Tarik + Kaya Toast",
+    "Spicy Sambal Fish",
+    "Claypot Ginger Chicken",
+    "Nasi Campur Local Set"
+  ];
+  const base = seedFromId(stopId) % dishPool.length;
+  return [dishPool[base], dishPool[(base + 2) % dishPool.length], dishPool[(base + 4) % dishPool.length]];
+}
+
+function foodPhotosForStop(stopId: string) {
+  const base = seedFromId(stopId) % FOOD_PHOTOS.length;
+  return [FOOD_PHOTOS[base], FOOD_PHOTOS[(base + 2) % FOOD_PHOTOS.length], FOOD_PHOTOS[(base + 4) % FOOD_PHOTOS.length]];
+}
+
 const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: string; userText: string }>> = {
   en: [
     { key: "rain", label: "🌧 Rain", userText: "Rain detected." },
@@ -343,6 +376,23 @@ export function TripClient({
                 <div className="mt-1 inline-block max-w-[92%] rounded-2xl border border-border bg-white px-3 py-1.5 text-xs text-text-secondary">
                   AI: After {stop.name}, swing by the next stop for a quick local fix.
                 </div>
+                {stop.category === "food" ? (
+                  <div className="mt-2 space-y-2">
+                    <div className="rounded-xl border border-border bg-white/80 p-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">3 Best Food</p>
+                      <ul className="mt-1 text-xs text-text-primary">
+                        {bestFoodsForStop(stop.id).map((dish) => (
+                          <li key={`${stop.id}-${dish}`} className="mb-0.5">• {dish}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {foodPhotosForStop(stop.id).map((src, i) => (
+                        <img key={`${stop.id}-photo-${i}`} src={src} alt={`${stop.name} food ${i + 1}`} className="h-16 w-full rounded-lg object-cover" loading="lazy" />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mt-1 flex gap-2">
                   <button
                     className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
