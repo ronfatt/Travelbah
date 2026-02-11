@@ -16,9 +16,17 @@ export default function LandingPage() {
   const [mode, setMode] = useState<TravelMode>("food");
   const [language, setLanguage] = useState<TravelLanguage>("en");
   const [line, setLine] = useState<string>(uiText.en.defaultLandingGuide);
+  const [quickAsk, setQuickAsk] = useState("Where should I eat tonight in Tawau?");
+  const [quickReply, setQuickReply] = useState("");
 
   const t = uiText[language];
   const activeLangIndex = useMemo(() => languageOptions.indexOf(language), [language]);
+  const modeHint =
+    mode === "food"
+      ? "We’ll line up 2–3 local stops along your route."
+      : mode === "chill"
+        ? "Scenic spots + relaxed pacing."
+        : "Minimal stops, fastest route.";
 
   function setLanguageAndLine(next: TravelLanguage) {
     const safe = normalizeLanguage(next);
@@ -41,12 +49,26 @@ export default function LandingPage() {
     router.push(`/trip?${params.toString()}`);
   }
 
+  function askTravelBah() {
+    const q = quickAsk.toLowerCase();
+    if (q.includes("eat") || q.includes("food") || q.includes("dinner")) {
+      setQuickReply("Tonight, try Sabindo area for seafood, then hop to a nearby kopi spot for dessert. Want halal-first options?");
+      return;
+    }
+    if (q.includes("sunset") || q.includes("photo")) {
+      setQuickReply("For sunset shots, check Waterfront Deck around 6:00-6:40 pm. I can route it into your trip.");
+      return;
+    }
+    setQuickReply("Good one. Share your start and destination and I’ll shape a local-first route for you.");
+  }
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-4 py-8">
       <div className="rounded-2xl border border-border bg-card/90 p-6 shadow-card sm:p-8">
         <section className="mx-auto max-w-2xl text-center">
           <h1 className="text-[2.5rem] font-semibold leading-tight text-primary-dark">TravelBah</h1>
-          <p className="mt-2 text-xl font-medium text-text-primary">Tawau Edition — AI-Guided Local Journey</p>
+          <p className="mt-2 text-xl font-medium text-text-primary">Tawau Edition — AI Local Guide, Bah.</p>
+          <p className="mt-2 text-sm text-text-secondary">Less tourist traps. More real stuff, bah.</p>
           <p className="mt-3 text-sm text-text-secondary">Tell us where you are and where you&apos;re heading — we&apos;ll handle the rest.</p>
         </section>
 
@@ -96,16 +118,31 @@ export default function LandingPage() {
           <div className="mt-1">
             <ModePicker value={mode} onChange={setMode} />
           </div>
+          <p className="text-sm text-text-secondary">{modeHint}</p>
 
           <button onClick={go} className="travelbah-lift mt-1 rounded-[18px] bg-primary px-5 py-4 text-base font-semibold text-white shadow-card hover:bg-primary-dark">
-            Start My Journey →
+            👉 Plan My Route
           </button>
+          <p className="text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
 
           <p className="rounded-2xl border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
             {t.guidePrefix}: {line}
           </p>
         </div>
       </div>
+
+      <aside className="fixed bottom-4 right-4 z-20 w-[320px] rounded-2xl border border-border bg-card/95 p-4 shadow-card">
+        <p className="text-sm font-semibold text-text-primary">💬 Ask TravelBah</p>
+        <input
+          value={quickAsk}
+          onChange={(e) => setQuickAsk(e.target.value)}
+          className="mt-2 w-full rounded-[14px] border border-border bg-card p-[12px] text-sm text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(22,94,99,0.12)]"
+        />
+        <button onClick={askTravelBah} className="travelbah-lift mt-2 w-full rounded-[14px] bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+          Ask
+        </button>
+        {quickReply ? <p className="mt-2 text-sm text-text-secondary">{quickReply}</p> : null}
+      </aside>
     </main>
   );
 }
