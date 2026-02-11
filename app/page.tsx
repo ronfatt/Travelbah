@@ -3,28 +3,40 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ModePicker } from "@/components/ModePicker";
-import { TravelMode } from "@/lib/types";
+import { normalizeLanguage, languageNames, uiText, fillTemplate } from "@/lib/i18n";
+import { TravelLanguage, TravelMode } from "@/lib/types";
 import { modeLabel } from "@/lib/prompt";
+
+const languageOptions: TravelLanguage[] = ["en", "zh", "ms"];
 
 export default function LandingPage() {
   const router = useRouter();
   const [origin, setOrigin] = useState("Tawau Airport");
   const [destination, setDestination] = useState("Tawau Town");
   const [mode, setMode] = useState<TravelMode>("food");
-  const [line, setLine] = useState("Tell me your start and destination, I will line up a local-friendly route.");
+  const [language, setLanguage] = useState<TravelLanguage>("en");
+  const [line, setLine] = useState<string>(uiText.en.defaultLandingGuide);
+
+  const t = uiText[language];
+
+  function setLanguageAndLine(next: TravelLanguage) {
+    const safe = normalizeLanguage(next);
+    setLanguage(safe);
+    setLine(uiText[safe].defaultLandingGuide);
+  }
 
   function useLocation() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((position) => {
       const { latitude, longitude } = position.coords;
       setOrigin(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-      setLine("Nice, got your live location. Pick a mode and go.");
+      setLine(t.locationCaptured);
     });
   }
 
   function go() {
-    setLine(`Nice choice. ${modeLabel(mode)} mode, now generating your route...`);
-    const params = new URLSearchParams({ origin, destination, mode });
+    setLine(fillTemplate(t.generatingRoute, { mode: modeLabel(mode, language) }));
+    const params = new URLSearchParams({ origin, destination, mode, language });
     router.push(`/trip?${params.toString()}`);
   }
 
@@ -35,6 +47,25 @@ export default function LandingPage() {
         <h1 className="mt-2 text-3xl font-bold text-ink">Tawau Smart Trip Planner</h1>
 
         <div className="mt-6 grid gap-3">
+          <div>
+            <label className="text-sm font-medium">{t.chooseLanguage}</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {languageOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setLanguageAndLine(opt)}
+                  className={`rounded-full border px-3 py-1 text-sm ${
+                    language === opt ? "border-ocean bg-ocean text-white" : "border-slate-300 bg-white"
+                  }`}
+                >
+                  {languageNames[opt]}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-slate-600">{t.languageHint}</p>
+          </div>
+
           <label className="text-sm font-medium">I&apos;m at</label>
           <div className="flex gap-2">
             <input value={origin} onChange={(e) => setOrigin(e.target.value)} className="flex-1 rounded-xl border border-slate-300 px-3 py-2" />
@@ -54,7 +85,7 @@ export default function LandingPage() {
             Go
           </button>
 
-          <p className="rounded-lg bg-sand px-3 py-2 text-sm text-slate-700">Guide: {line}</p>
+          <p className="rounded-lg bg-sand px-3 py-2 text-sm text-slate-700">{t.guidePrefix}: {line}</p>
         </div>
       </div>
     </main>

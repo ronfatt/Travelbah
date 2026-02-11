@@ -1,4 +1,5 @@
 export type TravelMode = "food" | "chill" | "efficient";
+export type TravelLanguage = "en" | "zh" | "ms";
 export type PoiCategory = "food" | "stay" | "spot" | "entertainment";
 export type ContextEvent = "rain" | "traffic" | "tired" | null;
 

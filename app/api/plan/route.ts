@@ -2,19 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { chooseSurpriseDrop, searchPoisAlongRoute } from "@/lib/scoring";
 import { geocode, route } from "@/lib/maps";
 import { openingLine, strategyLine } from "@/lib/prompt";
-import { ContextEvent, RoutePlan, TravelMode } from "@/lib/types";
+import { ContextEvent, RoutePlan, TravelLanguage, TravelMode } from "@/lib/types";
+import { normalizeLanguage } from "@/lib/i18n";
 
 type PlanPayload = {
   origin: string;
   destination: string;
   mode: TravelMode;
   event?: ContextEvent;
+  language?: TravelLanguage;
 };
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as PlanPayload;
     const event = body.event ?? null;
+    const language = normalizeLanguage(body.language);
 
     const [originCoord, destinationCoord] = await Promise.all([geocode(body.origin), geocode(body.destination)]);
     const routeData = await route(originCoord, destinationCoord, body.mode);
@@ -28,8 +31,8 @@ export async function POST(req: NextRequest) {
       polyline: routeData.polyline,
       etaMinutes: routeData.etaMinutes,
       distanceKm: routeData.distanceKm,
-      aiIntro: openingLine(body.mode, body.origin, body.destination),
-      strategy: strategyLine(body.mode, event),
+      aiIntro: openingLine(body.mode, body.origin, body.destination, language),
+      strategy: strategyLine(body.mode, event, language),
       stops,
       surpriseDrop: undefined
     };
