@@ -8,6 +8,20 @@ import { TravelLanguage, TravelMode } from "@/lib/types";
 import { modeLabel } from "@/lib/prompt";
 
 const languageOptions: TravelLanguage[] = ["en", "zh", "ms"];
+const upcomingModules = [
+  {
+    emoji: "🏨",
+    title: "Stay",
+    desc: "Smart stay picks near your route",
+    status: "Coming soon · 还没开放"
+  },
+  {
+    emoji: "🚌",
+    title: "Transport",
+    desc: "Live transfer and ride suggestions",
+    status: "Coming soon · 还没开放"
+  }
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -123,6 +137,20 @@ export default function LandingPage() {
             <ModePicker value={mode} onChange={setMode} />
           </div>
           <p className="text-sm text-text-secondary">{modeHint}</p>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            {upcomingModules.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-dashed border-border bg-white/60 px-4 py-3 opacity-80">
+                <p className="font-semibold text-text-primary">
+                  {item.emoji} {item.title}
+                </p>
+                <p className="text-xs text-text-secondary">{item.desc}</p>
+                <span className="mt-1 inline-block rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-text-secondary">
+                  {item.status}
+                </span>
+              </div>
+            ))}
+          </div>
 
           <button
             onClick={go}
