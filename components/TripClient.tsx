@@ -262,7 +262,8 @@ export function TripClient({
       polyline: plan.polyline,
       surpriseDrop: plan.surpriseDrop,
       distanceKm: plan.distanceKm,
-      etaMinutes: plan.etaMinutes
+      etaMinutes: plan.etaMinutes,
+      mode
     };
     sessionStorage.setItem("travelbah_recap", JSON.stringify(recapPayload));
     router.push("/recap");

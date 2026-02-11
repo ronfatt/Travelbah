@@ -1,23 +1,35 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import type { Poi } from "@/lib/types";
+import type { Poi, TravelMode } from "@/lib/types";
+
+const foodMoodTags = [
+  "☕ Strong Kopi + Butter Toast Fix",
+  "🔥 Char-grilled Lunch Hit",
+  "🥢 Evening Satay Energy",
+  "🍤 Seafood Comfort Punch",
+  "🥘 Local Flavor Power-up"
+];
+
+function seededIndex(seed: string, max: number) {
+  const n = seed.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return n % max;
+}
 
 function stopRole(stop: Poi, idx: number) {
   if (stop.category === "food") {
-    const tags = [
-      "☕ Kopi & Toast Stop",
-      "🔥 Grilled Lunch Spot",
-      "🥢 Evening Satay Break",
-      "🍤 Seafood Comfort Stop",
-      "🥘 Local Flavor Fix"
-    ];
-    return tags[idx % tags.length];
+    return foodMoodTags[(seededIndex(stop.id, foodMoodTags.length) + idx) % foodMoodTags.length];
   }
-  if (stop.category === "spot") return "📸 Scenic Photo Pause";
-  if (stop.category === "stay") return "🛏 Rest & Recharge Point";
+  if (stop.category === "spot") return "📸 Golden Hour Photo Pause";
+  if (stop.category === "stay") return "🛏 Reset & Recharge Point";
   return "🎯 Local Fun Detour";
+}
+
+function moodLine(mode: TravelMode) {
+  if (mode === "food") return "🍜 Food-first Adventure";
+  if (mode === "chill") return "😌 Chill Route";
+  return "⚡ Efficient Sprint";
 }
 
 export function RecapCard({
@@ -28,7 +40,8 @@ export function RecapCard({
   staticMapUrl,
   distanceKm,
   etaMinutes,
-  surpriseCount
+  surpriseCount,
+  mode
 }: {
   origin: string;
   destination: string;
@@ -38,8 +51,11 @@ export function RecapCard({
   distanceKm?: number;
   etaMinutes?: number;
   surpriseCount?: number;
+  mode: TravelMode;
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const storyRef = useRef<HTMLDivElement | null>(null);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const aiLine = useMemo(
     () =>
@@ -47,19 +63,33 @@ export function RecapCard({
     [stops.length]
   );
 
-  async function downloadPng() {
-    if (!cardRef.current) return;
-    const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
+  async function captureAndDownload(ref: HTMLDivElement | null, fileName: string) {
+    if (!ref) return;
+    const canvas = await html2canvas(ref, { backgroundColor: null, scale: 2 });
     const link = document.createElement("a");
-    link.download = "travelbah-journey-story.png";
+    link.download = fileName;
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
 
-  async function share() {
+  async function downloadPng() {
+    await captureAndDownload(cardRef.current, "travelbah-journey-story.png");
+  }
+
+  async function downloadStoryPng() {
+    await captureAndDownload(storyRef.current, "travelbah-story-9x16.png");
+  }
+
+  async function shareNative() {
     if (navigator.share) {
-      await navigator.share({ title: "TravelBah Journey Story", text: aiLine });
+      await navigator.share({ title: "TravelBah Journey Story", text: aiLine, url: window.location.href });
+      return;
     }
+    setShowShareMenu((v) => !v);
+  }
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(window.location.href);
   }
 
   return (
@@ -70,6 +100,7 @@ export function RecapCard({
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-text-secondary">TravelBah Journey Story</p>
               <h2 className="mt-1 text-[1.5rem] font-extrabold leading-tight text-text-primary">From runway to real flavors.</h2>
+              <p className="mt-1 text-[11px] font-semibold text-[#4f46e5]">Journey Mood: {moodLine(mode)}</p>
               <p className="mt-1 text-xs text-text-secondary">
                 {origin} → {destination}
                 <br />
@@ -86,6 +117,7 @@ export function RecapCard({
               <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]" />
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/45 via-transparent to-transparent" />
+            <p className="absolute bottom-2 left-3 text-[10px] font-medium text-white/90">TravelBah watermark</p>
             <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90">TravelBah · Tawau Edition</p>
           </div>
 
@@ -123,16 +155,49 @@ export function RecapCard({
               </div>
             ))}
           </div>
+
+          <div className="mt-2 border-t border-border/60 pt-2 text-center text-[10px] text-text-secondary">
+            TravelBah · AI Local Guide
+            <br />
+            travelbah.app
+          </div>
         </div>
       </div>
 
       <div className="mx-auto mt-4 flex w-full max-w-[440px] gap-2">
-        <button onClick={share} className="travelbah-lift gradient-primary flex-1 rounded-full px-4 py-2 font-semibold text-white">
+        <button onClick={shareNative} className="travelbah-lift gradient-primary flex-1 rounded-full px-4 py-2 font-semibold text-white">
           Share
         </button>
         <button onClick={downloadPng} className="travelbah-lift rounded-full border border-border bg-white/80 px-4 py-2 font-semibold text-text-primary">
           Download PNG
         </button>
+      </div>
+
+      {showShareMenu ? (
+        <div className="mx-auto mt-3 grid w-full max-w-[440px] grid-cols-2 gap-2 rounded-2xl border border-border bg-white/85 p-3 text-sm">
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadPng}>Instagram (vertical)</button>
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadStoryPng}>Story 9:16</button>
+          <button
+            className="travelbah-lift rounded-xl border border-border px-2 py-2"
+            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`TravelBah Journey Story\n${window.location.href}`)}`, "_blank")}
+          >
+            WhatsApp
+          </button>
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={copyLink}>Copy Link</button>
+        </div>
+      ) : null}
+
+      <div className="pointer-events-none absolute -left-[9999px] top-0">
+        <div ref={storyRef} className="h-[640px] w-[360px] overflow-hidden rounded-[24px] bg-gradient-to-b from-[#eef2ff] to-white p-4">
+          <h3 className="text-sm uppercase tracking-[0.18em] text-text-secondary">TravelBah Journey Story</h3>
+          <p className="mt-2 text-2xl font-extrabold text-text-primary">From runway to real flavors.</p>
+          <p className="mt-2 text-sm text-[#4f46e5]">{moodLine(mode)}</p>
+          <div className="mt-3 overflow-hidden rounded-2xl">
+            {staticMapUrl ? <img src={staticMapUrl} alt="Story map" className="h-52 w-full object-cover" /> : <div className="h-52 bg-gradient-to-r from-[#4f46e5] to-[#14b8a6]" />}
+          </div>
+          <p className="mt-3 text-sm text-text-secondary">{aiLine}</p>
+          <div className="mt-4 text-xs text-text-secondary">TravelBah · AI Local Guide · travelbah.app</div>
+        </div>
       </div>
     </div>
   );
