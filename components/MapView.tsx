@@ -10,9 +10,11 @@ type Props = {
   destination: [number, number];
   stops: Poi[];
   surprise?: Poi;
+  congestionSegment?: [number, number][];
+  altPolyline?: [number, number][];
 };
 
-export function MapView({ polyline, origin, destination, stops, surprise }: Props) {
+export function MapView({ polyline, origin, destination, stops, surprise, congestionSegment, altPolyline }: Props) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -45,6 +47,48 @@ export function MapView({ polyline, origin, destination, stops, surprise }: Prop
           properties: {}
         }
       });
+      if (altPolyline && altPolyline.length > 1) {
+        mapRef.current.addSource("alt-route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: altPolyline },
+            properties: {}
+          }
+        });
+        mapRef.current.addLayer({
+          id: "alt-route-line",
+          type: "line",
+          source: "alt-route",
+          paint: {
+            "line-color": "#14B8A6",
+            "line-width": 4,
+            "line-opacity": 0.75
+          }
+        });
+      }
+
+      if (congestionSegment && congestionSegment.length > 1) {
+        mapRef.current.addSource("congestion", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: congestionSegment },
+            properties: {}
+          }
+        });
+        mapRef.current.addLayer({
+          id: "congestion-line",
+          type: "line",
+          source: "congestion",
+          paint: {
+            "line-color": "#ef4444",
+            "line-width": 7,
+            "line-opacity": 0.95
+          }
+        });
+      }
+
       mapRef.current.addLayer({
         id: "route-glow",
         type: "line",
@@ -111,7 +155,7 @@ export function MapView({ polyline, origin, destination, stops, surprise }: Prop
       }
 
       const bounds = new mapboxgl.LngLatBounds();
-      [origin, destination, ...polyline].forEach((coord) => bounds.extend(coord));
+      [origin, destination, ...polyline, ...(altPolyline ?? [])].forEach((coord) => bounds.extend(coord));
       mapRef.current.fitBounds(bounds, { padding: 36 });
     });
 
@@ -121,7 +165,7 @@ export function MapView({ polyline, origin, destination, stops, surprise }: Prop
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [token, origin, destination, polyline, stops, surprise]);
+  }, [token, origin, destination, polyline, stops, surprise, congestionSegment, altPolyline]);
 
   if (!token) {
     return (
