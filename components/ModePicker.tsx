@@ -19,7 +19,7 @@ export function ModePicker({ value, onChange }: { value: TravelMode; onChange: (
           className={`travelbah-lift rounded-2xl border px-4 py-4 text-left transition-colors ${
             value === opt.value
               ? "border-transparent text-white shadow-glow gradient-primary"
-              : "border-border bg-white/70 text-text-primary hover:border-primary hover:bg-white"
+              : "mode-card text-text-primary"
           }`}
         >
           <p className="text-base font-semibold">

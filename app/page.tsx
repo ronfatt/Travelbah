@@ -18,6 +18,7 @@ export default function LandingPage() {
   const [line, setLine] = useState<string>(uiText.en.defaultLandingGuide);
   const [quickAsk, setQuickAsk] = useState("Where should I eat tonight in Tawau?");
   const [quickReply, setQuickReply] = useState("");
+  const [ctaHovered, setCtaHovered] = useState(false);
 
   const t = uiText[language];
   const activeLangIndex = useMemo(() => languageOptions.indexOf(language), [language]);
@@ -66,9 +67,9 @@ export default function LandingPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-4 py-8">
       <div className="glass-card rounded-2xl p-6 shadow-card sm:p-8">
         <section className="mx-auto max-w-2xl text-center">
-          <h1 className="text-[2.5rem] font-bold leading-tight tracking-[0.02em]">
+          <h1 className="text-[3rem] font-extrabold leading-[1.02] tracking-[0.01em] sm:text-[3.4rem]">
             <span className="title-gradient">TravelBah</span>
-            <span className="sparkle-dot" />
+            <span className={`sparkle-dot ${ctaHovered ? "sparkle-dot--active" : ""}`} />
           </h1>
           <p className="mt-2 text-xl font-medium text-text-primary">Tawau Edition — AI Local Guide, Bah.</p>
           <p className="mt-2 text-sm text-text-secondary">Less tourist traps. More real stuff, bah.</p>
@@ -123,7 +124,14 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-text-secondary">{modeHint}</p>
 
-          <button onClick={go} className="travelbah-lift gradient-primary mt-1 rounded-full px-6 py-4 text-base font-semibold text-white">
+          <button
+            onClick={go}
+            onMouseEnter={() => setCtaHovered(true)}
+            onMouseLeave={() => setCtaHovered(false)}
+            onFocus={() => setCtaHovered(true)}
+            onBlur={() => setCtaHovered(false)}
+            className="travelbah-lift gradient-primary mt-1 rounded-full px-6 py-4 text-base font-semibold text-white"
+          >
             👉 Plan My Route
           </button>
           <p className="text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
@@ -134,7 +142,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <aside className="glass-card fixed bottom-4 right-4 z-20 w-[320px] rounded-2xl p-4 shadow-card">
+      <aside className="glass-card ask-fab fixed bottom-4 right-4 z-20 w-[320px] rounded-2xl p-4 shadow-card">
         <p className="text-sm font-semibold text-text-primary">💬 Ask TravelBah</p>
         <input
           value={quickAsk}
