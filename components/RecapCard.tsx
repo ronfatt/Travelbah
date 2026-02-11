@@ -198,7 +198,7 @@ export function RecapCard({
             ) : (
               <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]">
                 {routePreview ? (
-                  <svg viewBox={`0 0 ${routePreview.w} ${routePreview.h}`} className="h-full w-full opacity-90">
+                  <svg viewBox={`0 0 ${routePreview.w} ${routePreview.h}`} className="relative z-20 h-full w-full opacity-95">
                     <defs>
                       <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#4F46E5" />
@@ -230,7 +230,7 @@ export function RecapCard({
                     })}
                   </svg>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs font-semibold text-white/85">Route preview unavailable</div>
+                  <div className="relative z-20 flex h-full items-center justify-center text-xs font-semibold text-white/85">Route preview unavailable</div>
                 )}
                 {routePreview ? (
                   <>
@@ -239,7 +239,7 @@ export function RecapCard({
                       .map((p, i) => (
                         <span
                           key={`dot-${i}`}
-                          className="absolute h-1.5 w-1.5 rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                          className="absolute z-20 h-1.5 w-1.5 rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.9)]"
                           style={{ left: `${(p[0] / routePreview.w) * 100}%`, top: `${(p[1] / routePreview.h) * 100}%` }}
                         />
                       ))}
@@ -247,15 +247,10 @@ export function RecapCard({
                 ) : null}
               </div>
             )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/52 via-[#0f172a]/12 to-transparent" />
-            <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
-            {routePreview ? (
-              <span className="absolute right-2 top-2 rounded-full bg-black/30 px-2 py-1 text-[10px] font-semibold text-white">
-                fallback route · pts {routePreview.xy.length}
-              </span>
-            ) : null}
-            <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah watermark</p>
-            <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah · Tawau Edition</p>
+            <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-[#0f172a]/45 via-[#0f172a]/10 to-transparent" />
+            <span className="absolute left-2 top-2 z-30 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
+            <p className="absolute left-3 top-9 z-30 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah watermark</p>
+            <p className="absolute bottom-2 right-3 z-30 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah · Tawau Edition</p>
           </div>
 
           <div className="mt-3 rounded-xl border border-border bg-white/80 p-2 text-xs text-text-primary">
