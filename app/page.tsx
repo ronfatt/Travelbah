@@ -67,11 +67,11 @@ export default function LandingPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-4 py-8">
       <div className="glass-card rounded-2xl p-6 shadow-card sm:p-8">
         <section className="mx-auto max-w-2xl text-center">
-          <h1 className="text-[3rem] font-extrabold leading-[1.02] tracking-[0.01em] sm:text-[3.4rem]">
+          <h1 className="text-[3.45rem] font-extrabold leading-[1.01] tracking-[0.035em] sm:text-[3.9rem]">
             <span className="title-gradient">TravelBah</span>
             <span className={`sparkle-dot ${ctaHovered ? "sparkle-dot--active" : ""}`} />
           </h1>
-          <p className="mt-2 text-xl font-medium text-text-primary">Tawau Edition — AI Local Guide, Bah.</p>
+          <p className="mt-2 text-lg font-medium text-text-primary">Tawau Edition — AI Local Guide, Bah.</p>
           <p className="mt-2 text-sm text-text-secondary">Less tourist traps. More real stuff, bah.</p>
           <p className="mt-3 text-sm text-text-secondary">Tell us where you are and where you&apos;re heading — we&apos;ll handle the rest.</p>
         </section>
@@ -130,7 +130,7 @@ export default function LandingPage() {
             onMouseLeave={() => setCtaHovered(false)}
             onFocus={() => setCtaHovered(true)}
             onBlur={() => setCtaHovered(false)}
-            className="travelbah-lift gradient-primary mt-1 rounded-full px-6 py-4 text-base font-semibold text-white"
+            className="travelbah-lift gradient-primary gradient-primary-flow mt-1 rounded-full px-6 py-4 text-base font-semibold text-white"
           >
             👉 Plan My Route
           </button>
