@@ -210,6 +210,58 @@ button:disabled {
   }
 }
 
+.ai-flow-board {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(145deg, rgba(79, 70, 229, 0.22), rgba(20, 184, 166, 0.14));
+  min-height: 150px;
+}
+
+.ai-flow-line {
+  position: absolute;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  animation: flow-run 4.4s linear infinite;
+}
+
+.ai-flow-line--a {
+  width: 65%;
+  top: 24%;
+  left: -45%;
+  animation-delay: 0s;
+}
+
+.ai-flow-line--b {
+  width: 58%;
+  top: 48%;
+  left: -40%;
+  animation-delay: 1s;
+}
+
+.ai-flow-line--c {
+  width: 72%;
+  top: 70%;
+  left: -55%;
+  animation-delay: 2s;
+}
+
+@keyframes flow-run {
+  0% {
+    transform: translateX(0);
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(220%);
+    opacity: 0.12;
+  }
+}
+
 .status-shimmer {
   position: relative;
   overflow: hidden;

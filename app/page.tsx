@@ -42,6 +42,12 @@ export default function LandingPage() {
       : mode === "chill"
         ? "Scenic spots + relaxed pacing."
         : "Minimal stops, fastest route.";
+  const liveExample =
+    mode === "food"
+      ? "Airport -> Town · 3 food stops · 1 surprise"
+      : mode === "chill"
+        ? "Airport -> Town · 2 scenic stops · 1 coffee break"
+        : "Airport -> Town · 2 quick stops · fastest route";
 
   function setLanguageAndLine(next: TravelLanguage) {
     const safe = normalizeLanguage(next);
@@ -91,6 +97,14 @@ export default function LandingPage() {
         </section>
 
         <div className="mt-8 grid gap-4">
+          <section className="ai-flow-board p-4">
+            <p className="relative z-10 text-sm font-semibold text-white/95">🧠 Optimizing local routes in Tawau...</p>
+            <p className="relative z-10 mt-2 text-xs text-white/85">Live engine preview: route scoring + stop matching + surprise trigger.</p>
+            <span className="ai-flow-line ai-flow-line--a" />
+            <span className="ai-flow-line ai-flow-line--b" />
+            <span className="ai-flow-line ai-flow-line--c" />
+          </section>
+
           <div>
             <label className="text-sm font-medium text-text-primary">{t.chooseLanguage}</label>
             <div className="relative mt-2 grid grid-cols-3 rounded-[14px] border border-border bg-transparent p-1">
@@ -113,6 +127,8 @@ export default function LandingPage() {
             </div>
             <p className="mt-2 text-xs text-text-secondary">{t.languageHint}</p>
           </div>
+
+          <p className="text-sm font-semibold text-text-primary">Drop two points. I&apos;ll do the rest.</p>
 
           <label className="text-sm font-medium text-text-primary">Where are you now?</label>
           <div className="flex gap-2">
@@ -163,6 +179,12 @@ export default function LandingPage() {
             👉 Plan My Route
           </button>
           <p className="text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
+
+          <div className="rounded-2xl border border-border bg-white/72 p-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-text-secondary">Live Generated Example</p>
+            <p className="mt-1 text-sm font-semibold text-text-primary">{liveExample}</p>
+            <p className="mt-1 text-xs text-text-secondary">This preview updates by mode before you start the full trip.</p>
+          </div>
 
           <p className="glass-card rounded-2xl px-4 py-3 text-sm text-text-secondary">
             {t.guidePrefix}: {line}
