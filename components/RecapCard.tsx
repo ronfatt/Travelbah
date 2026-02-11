@@ -130,8 +130,9 @@ export function RecapCard({
   }
 
   const routePreview = useMemo(() => {
-    // Build a lightweight local SVG route preview from full polyline so map never disappears.
-    const points = polyline;
+    // Build a lightweight local SVG route preview so map never disappears.
+    // Prefer full polyline; if missing, fall back to stop coordinates.
+    const points = polyline.length > 1 ? polyline : stops.map((s) => [s.lng, s.lat] as [number, number]);
     const all = points.length ? points : [];
     if (!all.length) return null;
     const lngs = all.map((p) => p[0]);
@@ -188,30 +189,36 @@ export function RecapCard({
                         <stop offset="100%" stopColor="#14B8A6" />
                       </linearGradient>
                     </defs>
-                    <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="10" strokeOpacity="0.35" fill="none" />
-                    <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="4.5" fill="none" />
-                    {routePreview.xy.slice(0, 6).map((p, idx) => (
+                    <path d={routePreview.path} stroke="#ffffff" strokeWidth="10" strokeOpacity="0.45" fill="none" />
+                    <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="5.5" fill="none" />
+                    {stops.slice(0, 6).map((s, idx) => {
+                      const p =
+                        routePreview.xy[
+                          Math.max(
+                            0,
+                            Math.min(routePreview.xy.length - 1, Math.round(((idx + 1) / (stops.length + 1)) * routePreview.xy.length))
+                          )
+                        ];
+                      if (!p) return null;
+                      return (
                       <g key={`pt-${idx}`}>
-                        <circle cx={p[0]} cy={p[1]} r="11" fill="#14B8A6" />
+                        <circle cx={p[0]} cy={p[1]} r="12" fill="#ffffff" fillOpacity="0.9" />
+                        <circle cx={p[0]} cy={p[1]} r="9.5" fill="#14B8A6" />
                         <text x={p[0]} y={p[1] + 3} textAnchor="middle" fontSize="10" fill="#fff" fontWeight="700">
                           {idx + 1}
                         </text>
                       </g>
-                    ))}
+                      );
+                    })}
                   </svg>
-                ) : null}
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs font-semibold text-white/85">Route preview unavailable</div>
+                )}
               </div>
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/52 via-[#0f172a]/12 to-transparent" />
             <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
             <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah watermark</p>
-            <div className="absolute bottom-2 left-3 flex gap-1">
-              {stops.slice(0, 3).map((s, idx) => (
-                <span key={s.id} className="rounded-full bg-[#4f46e5]/85 px-2 py-0.5 text-[10px] font-semibold text-white">
-                  {idx + 1}
-                </span>
-              ))}
-            </div>
             <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah · Tawau Edition</p>
           </div>
 
