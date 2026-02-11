@@ -90,9 +90,9 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-4 py-8">
-      <div className="glass-card rounded-2xl p-6 shadow-card sm:p-8">
-        <section className="mx-auto max-w-2xl text-center">
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center bg-[#f4f6fa] px-4 py-8">
+      <div className="mx-auto w-full max-w-5xl rounded-[24px] border border-white bg-white/92 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] sm:p-7">
+        <section className="mx-auto max-w-3xl text-center">
           <h1 className="text-[3.45rem] font-extrabold leading-[1.01] tracking-[0.035em] sm:text-[3.9rem]">
             <span className="title-gradient">TravelBah</span>
             <span className={`sparkle-dot ${ctaHovered ? "sparkle-dot--active" : ""}`} />
@@ -103,7 +103,7 @@ export default function LandingPage() {
         </section>
 
         <div className="mt-8 grid gap-4">
-          <section className="ai-flow-board p-4">
+          <section className="rounded-2xl border border-[#e7eaf7] bg-gradient-to-r from-[#4f46e5] to-[#14b8a6] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_12px_26px_rgba(79,70,229,0.2)]">
             <p className="relative z-10 text-sm font-semibold text-white/95">🧠 Optimizing local routes in Tawau...</p>
             <p className="relative z-10 mt-2 text-xs text-white/85">Live engine preview: route scoring + stop matching + surprise trigger.</p>
             <span className="ai-flow-line ai-flow-line--a" />
@@ -111,7 +111,8 @@ export default function LandingPage() {
             <span className="ai-flow-line ai-flow-line--c" />
           </section>
 
-          <div>
+          <section className="rounded-2xl border border-[#e7eaf7] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+            <p className="mb-3 text-sm font-semibold text-text-primary">Drop two points. I&apos;ll do the rest.</p>
             <label className="text-sm font-medium text-text-primary">{t.chooseLanguage}</label>
             <div className="relative mt-2 grid grid-cols-3 rounded-[14px] border border-border bg-transparent p-1">
               <span
@@ -132,35 +133,35 @@ export default function LandingPage() {
               ))}
             </div>
             <p className="mt-2 text-xs text-text-secondary">{t.languageHint}</p>
-          </div>
+            <label className="mt-3 block text-sm font-medium text-text-primary">Where are you now?</label>
+            <div className="mt-1 flex gap-2">
+              <input
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                className="flex-1 rounded-[14px] border border-border bg-white p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
+              />
+              <button type="button" onClick={useLocation} className="travelbah-lift rounded-[14px] border border-border bg-white px-4 text-lg" aria-label="Use current location">
+                📍
+              </button>
+            </div>
 
-          <p className="text-sm font-semibold text-text-primary">Drop two points. I&apos;ll do the rest.</p>
-
-          <label className="text-sm font-medium text-text-primary">Where are you now?</label>
-          <div className="flex gap-2">
+            <label className="mt-3 block text-sm font-medium text-text-primary">Where do you want to go?</label>
             <input
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="flex-1 rounded-[14px] border border-border bg-white/70 p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              className="mt-1 w-full rounded-[14px] border border-border bg-white p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
             />
-            <button type="button" onClick={useLocation} className="travelbah-lift rounded-[14px] border border-border bg-white/70 px-4 text-lg" aria-label="Use current location">
-              📍
-            </button>
-          </div>
+          </section>
 
-          <label className="text-sm font-medium text-text-primary">Where do you want to go?</label>
-          <input
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            className="rounded-[14px] border border-border bg-white/70 p-[14px] text-text-primary outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
-          />
-
-          <div className="mt-1">
+          <section className="rounded-2xl border border-[#e7eaf7] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+            <p className="mb-2 text-sm font-semibold text-text-primary">Mode Selection</p>
             <ModePicker value={mode} onChange={setMode} />
-          </div>
-          <p className="text-sm text-text-secondary">{modeHint}</p>
+            <p className="mt-2 text-sm text-text-secondary">{modeHint}</p>
+          </section>
 
-          <div className="grid gap-2 sm:grid-cols-2">
+          <section className="rounded-2xl border border-[#e7eaf7] bg-[#f9fbff] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+            <p className="mb-2 text-sm font-semibold text-text-primary">Expansion Modules</p>
+            <div className="grid gap-2 sm:grid-cols-3">
             {upcomingModules.map((item) => (
               <div key={item.title} className="rounded-2xl border border-dashed border-border bg-white/60 px-4 py-3 opacity-80">
                 <p className="font-semibold text-text-primary">
@@ -172,29 +173,30 @@ export default function LandingPage() {
                 </span>
               </div>
             ))}
-          </div>
+            </div>
+          </section>
 
-          <button
-            onClick={go}
-            onMouseEnter={() => setCtaHovered(true)}
-            onMouseLeave={() => setCtaHovered(false)}
-            onFocus={() => setCtaHovered(true)}
-            onBlur={() => setCtaHovered(false)}
-            className="travelbah-lift gradient-primary gradient-primary-flow mt-1 rounded-full px-6 py-4 text-base font-semibold text-white"
-          >
-            👉 Plan My Route
-          </button>
-          <p className="text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
-
-          <div className="rounded-2xl border border-border bg-white/72 p-3">
+          <section className="rounded-2xl border border-[#e7eaf7] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
             <p className="text-xs uppercase tracking-[0.12em] text-text-secondary">Live Generated Example</p>
             <p className="mt-1 text-sm font-semibold text-text-primary">{liveExample}</p>
             <p className="mt-1 text-xs text-text-secondary">This preview updates by mode before you start the full trip.</p>
-          </div>
 
-          <p className="glass-card rounded-2xl px-4 py-3 text-sm text-text-secondary">
-            {t.guidePrefix}: {line}
-          </p>
+            <button
+              onClick={go}
+              onMouseEnter={() => setCtaHovered(true)}
+              onMouseLeave={() => setCtaHovered(false)}
+              onFocus={() => setCtaHovered(true)}
+              onBlur={() => setCtaHovered(false)}
+              className="travelbah-lift gradient-primary gradient-primary-flow mt-4 w-full rounded-full px-6 py-4 text-base font-semibold text-white"
+            >
+              👉 Plan My Route
+            </button>
+            <p className="mt-2 text-sm text-text-secondary">🧠 Travel ah. learns your vibe as you explore.</p>
+
+            <p className="glass-card mt-3 rounded-2xl px-4 py-3 text-sm text-text-secondary">
+              {t.guidePrefix}: {line}
+            </p>
+          </section>
         </div>
       </div>
 
