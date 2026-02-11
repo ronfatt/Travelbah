@@ -46,6 +46,17 @@ export function MapView({ polyline, origin, destination, stops, surprise }: Prop
         }
       });
       mapRef.current.addLayer({
+        id: "route-glow",
+        type: "line",
+        source: "route",
+        paint: {
+          "line-color": "#6366F1",
+          "line-width": 10,
+          "line-blur": 3,
+          "line-opacity": 0.28
+        }
+      });
+      mapRef.current.addLayer({
         id: "route-line",
         type: "line",
         source: "route",

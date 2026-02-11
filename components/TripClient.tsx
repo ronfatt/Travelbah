@@ -27,9 +27,9 @@ const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: stri
 const tripText: Record<TravelLanguage, Record<string, string>> = {
   en: {
     optimizing: "TravelBah is optimizing your route",
-    routeLocked: "✓ Route locked",
-    stopsFound: "✓ {n} stops found",
-    surpriseAdded: "✓ {n} surprise added",
+    routeLocked: "Route locked",
+    stopsFound: "{n} stops found",
+    surpriseAdded: "{n} surprise added",
     route: "Route Snapshot",
     eta: "ETA",
     stops: "Stops",
@@ -43,22 +43,22 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
     storyHint: "Create a shareable recap of today's route.",
-    added: "Added {name}. ETA extended by 12 mins.",
-    skipped: "Skipped {name}, route stays fast.",
+    added: "Added. ETA extended by 12 mins.",
+    skipped: "Got it. Keeping route efficient.",
     simulate: "Simulate real-time changes",
     modeAckFood: "You picked Food-first.",
     modeAckChill: "You picked Chill mode.",
     modeAckEfficient: "You picked Efficient mode.",
-    modeReply: "Airport to town, nice. I will lock in 3 solid local stops.",
+    modeReply: "Airport to town, nice. Since you picked Food-first, I'll lock in 3 solid local stops.",
     rainReply: "Rain detected. Switching first stop to indoor seating.",
     trafficReply: "Traffic detected. Reordering stops to reduce detour.",
     tiredReply: "Fatigue detected. Moving rest-friendly stop earlier."
   },
   zh: {
     optimizing: "TravelBah 正在优化你的路线",
-    routeLocked: "✓ 路线已锁定",
-    stopsFound: "✓ 找到 {n} 个停靠点",
-    surpriseAdded: "✓ 已加入 {n} 个惊喜点",
+    routeLocked: "路线已锁定",
+    stopsFound: "找到 {n} 个停靠点",
+    surpriseAdded: "已加入 {n} 个惊喜点",
     route: "路线快照",
     eta: "预计到达",
     stops: "停靠",
@@ -72,8 +72,8 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
     storyHint: "Create a shareable recap of today's route.",
-    added: "已加入 {name}，预计延长 12 分钟。",
-    skipped: "已跳过 {name}，路线保持高效。",
+    added: "已加入，预计延长 12 分钟。",
+    skipped: "收到，路线保持高效。",
     simulate: "Simulate real-time changes",
     modeAckFood: "你选择了 Food-first。",
     modeAckChill: "你选择了 Chill。",
@@ -85,9 +85,9 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
   },
   ms: {
     optimizing: "TravelBah sedang optimumkan laluan anda",
-    routeLocked: "✓ Laluan dikunci",
-    stopsFound: "✓ {n} hentian ditemui",
-    surpriseAdded: "✓ {n} surprise ditambah",
+    routeLocked: "Laluan dikunci",
+    stopsFound: "{n} hentian ditemui",
+    surpriseAdded: "{n} surprise ditambah",
     route: "Ringkasan Laluan",
     eta: "Jangka Tiba",
     stops: "Hentian",
@@ -101,8 +101,8 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
     storyHint: "Create a shareable recap of today's route.",
-    added: "{name} ditambah. ETA bertambah 12 minit.",
-    skipped: "{name} dilepas, laluan kekal laju.",
+    added: "Ditambah. ETA bertambah 12 minit.",
+    skipped: "Baik, laluan kekal efisien.",
     simulate: "Simulate real-time changes",
     modeAckFood: "Anda pilih Food-first.",
     modeAckChill: "Anda pilih Chill.",
@@ -143,6 +143,7 @@ export function TripClient({
   const [chatInput, setChatInput] = useState("");
   const [activeStops, setActiveStops] = useState(initialPlan.stops);
   const [engineRunning, setEngineRunning] = useState(true);
+  const [statusStep, setStatusStep] = useState(0);
 
   const t = tripText[language];
   const [chatLog, setChatLog] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
@@ -152,9 +153,19 @@ export function TripClient({
   ]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setEngineRunning(false), 1100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!engineRunning) return;
+    setStatusStep(0);
+    const tick1 = setTimeout(() => setStatusStep(1), 260);
+    const tick2 = setTimeout(() => setStatusStep(2), 560);
+    const tick3 = setTimeout(() => setStatusStep(3), 860);
+    const done = setTimeout(() => setEngineRunning(false), 1100);
+    return () => {
+      clearTimeout(tick1);
+      clearTimeout(tick2);
+      clearTimeout(tick3);
+      clearTimeout(done);
+    };
+  }, [engineRunning]);
 
   const surpriseShown = useMemo(() => Boolean(plan.surpriseDrop), [plan.surpriseDrop]);
   const etaTime = useMemo(
@@ -170,6 +181,7 @@ export function TripClient({
     if (!event) return;
     setLoading(true);
     setEngineRunning(true);
+    setStatusStep(0);
 
     const selected = eventLabels[language].find((x) => x.key === event);
     if (selected) {
@@ -229,9 +241,18 @@ export function TripClient({
           {engineRunning ? "..." : ""}
         </p>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{t.routeLocked}</span>
-          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{fillTemplate(t.stopsFound, { n: String(activeStops.length) })}</span>
-          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{fillTemplate(t.surpriseAdded, { n: plan.surpriseDrop ? "1" : "0" })}</span>
+          <span className={`rounded-full border border-border bg-white/75 px-2 py-1 transition-opacity ${statusStep >= 1 ? "opacity-100" : "opacity-40"}`}>
+            {statusStep >= 1 ? "✓ " : "… "}
+            {t.routeLocked}
+          </span>
+          <span className={`rounded-full border border-border bg-white/75 px-2 py-1 transition-opacity ${statusStep >= 2 ? "opacity-100" : "opacity-40"}`}>
+            {statusStep >= 2 ? "✓ " : "… "}
+            {fillTemplate(t.stopsFound, { n: String(activeStops.length) })}
+          </span>
+          <span className={`rounded-full border border-border bg-white/75 px-2 py-1 transition-opacity ${statusStep >= 3 ? "opacity-100" : "opacity-40"}`}>
+            {statusStep >= 3 ? "✓ " : "… "}
+            {fillTemplate(t.surpriseAdded, { n: plan.surpriseDrop ? "1" : "0" })}
+          </span>
         </div>
       </section>
 
@@ -280,7 +301,7 @@ export function TripClient({
           </div>
 
           {surpriseShown && plan.surpriseDrop ? (
-            <div className="mb-3 rounded-2xl border border-accent/50 bg-[#fff8ec] p-3 text-sm transition-shadow hover:shadow-[0_0_0_1px_rgba(20,184,166,0.16),0_10px_24px_rgba(20,184,166,0.12)]">
+            <div className="mb-3 rounded-2xl border border-[#8b5cf6]/45 bg-[rgba(248,245,255,0.92)] p-3 text-sm shadow-[0_0_0_1px_rgba(139,92,246,0.24),0_10px_24px_rgba(99,102,241,0.14)] transition-shadow hover:shadow-[0_0_0_1px_rgba(139,92,246,0.35),0_16px_32px_rgba(99,102,241,0.2)]">
               <p className="font-semibold">⚡ {t.surpriseDrop}</p>
               <p>
                 {plan.surpriseDrop.name} {t.fitsSegment}
@@ -289,13 +310,25 @@ export function TripClient({
                 <span className="inline-block rounded-[8px] bg-accent px-2 py-1 text-[0.75rem] text-white">{t.partner}</span>
                 <button
                   className="travelbah-lift rounded border border-border bg-white px-2 py-0.5 text-xs"
-                  onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${plan.surpriseDrop!.name}` }, { role: "assistant", text: fillTemplate(t.added, { name: plan.surpriseDrop!.name }) }])}
+                  onClick={() =>
+                    setChatLog((prev) => [
+                      ...prev,
+                      { role: "user", text: `Add ${plan.surpriseDrop!.name}.` },
+                      { role: "assistant", text: t.added }
+                    ])
+                  }
                 >
                   {t.addStop}
                 </button>
                 <button
                   className="travelbah-lift rounded border border-border bg-white px-2 py-0.5 text-xs"
-                  onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${plan.surpriseDrop!.name}` }, { role: "assistant", text: fillTemplate(t.skipped, { name: plan.surpriseDrop!.name }) }])}
+                  onClick={() =>
+                    setChatLog((prev) => [
+                      ...prev,
+                      { role: "user", text: `Skip ${plan.surpriseDrop!.name}.` },
+                      { role: "assistant", text: t.skipped }
+                    ])
+                  }
                 >
                   {t.skip}
                 </button>
@@ -307,11 +340,15 @@ export function TripClient({
             {activeStops.map((stop, idx) => (
               <div key={stop.id} className="mb-2 rounded-2xl border border-border p-2 text-sm transition-colors hover:bg-bg">
                 <p className="font-medium">{idx + 1}. {stop.name}</p>
-                <p className="text-text-secondary">{stop.short_desc}</p>
+                <div className="mt-1 inline-block max-w-[92%] rounded-2xl border border-border bg-white px-3 py-1.5 text-xs text-text-secondary">
+                  AI: After {stop.name}, swing by the next stop for a quick local fix.
+                </div>
                 <div className="mt-1 flex gap-2">
                   <button
                     className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
-                    onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.added, { name: stop.name }) }])}
+                    onClick={() =>
+                      setChatLog((prev) => [...prev, { role: "user", text: `Add ${stop.name}.` }, { role: "assistant", text: t.added }])
+                    }
                   >
                     {t.addStop}
                   </button>
@@ -319,7 +356,7 @@ export function TripClient({
                     className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
                     onClick={() => {
                       setActiveStops((prev) => prev.filter((s) => s.id !== stop.id));
-                      setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.skipped, { name: stop.name }) }]);
+                      setChatLog((prev) => [...prev, { role: "user", text: `Skip ${stop.name}.` }, { role: "assistant", text: t.skipped }]);
                     }}
                   >
                     {t.skip}
@@ -349,9 +386,9 @@ export function TripClient({
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChat()}
               placeholder={t.askPlaceholder}
-              className="flex-1 rounded-[14px] border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
+              className="flex-1 rounded-[14px] border border-border bg-white/70 px-3 py-2 text-sm outline-none backdrop-blur-[10px] transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.16)]"
             />
-            <button onClick={sendChat} className="travelbah-lift rounded-[14px] bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+            <button onClick={sendChat} className="travelbah-lift gradient-primary gradient-primary-flow rounded-[14px] px-3 py-2 text-sm font-semibold text-white">
               {t.ask}
             </button>
           </div>
