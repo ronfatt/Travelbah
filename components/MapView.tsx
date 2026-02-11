@@ -37,6 +37,7 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
 
       mapRef.current.addSource("route", {
         type: "geojson",
+        lineMetrics: true,
         data: {
           type: "Feature",
           geometry: { type: "LineString", coordinates: polyline },
@@ -47,13 +48,37 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
         id: "route-line",
         type: "line",
         source: "route",
-        paint: { "line-color": "#F59E0B", "line-width": 5 }
+        paint: {
+          "line-gradient": [
+            "interpolate",
+            ["linear"],
+            ["line-progress"],
+            0,
+            "#4F46E5",
+            0.5,
+            "#6366F1",
+            1,
+            "#3B82F6"
+          ],
+          "line-width": 5
+        }
       });
 
-      const createMarkerElement = (kind: "origin" | "destination" | "stop", delayMs = 0) => {
+      const createMarkerElement = (kind: "origin" | "destination" | "stop", delayMs = 0, label?: string) => {
         const el = document.createElement("div");
         el.className = `travelbah-marker travelbah-marker--${kind}`;
         el.style.animationDelay = `${delayMs}ms`;
+        if (label) {
+          el.textContent = label;
+          el.style.fontSize = "11px";
+          el.style.fontWeight = "700";
+          el.style.color = "#fff";
+          el.style.display = "flex";
+          el.style.alignItems = "center";
+          el.style.justifyContent = "center";
+          el.style.width = "22px";
+          el.style.height = "22px";
+        }
         return el;
       };
 
@@ -61,7 +86,7 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
       const destinationMarker = new mapboxgl.Marker({ element: createMarkerElement("destination", 180) }).setLngLat(destination).addTo(mapRef.current);
       markersRef.current = [originMarker, destinationMarker];
       stops.forEach((stop, idx) => {
-        const marker = new mapboxgl.Marker({ element: createMarkerElement("stop", 280 + idx * 45) })
+        const marker = new mapboxgl.Marker({ element: createMarkerElement("stop", 280 + idx * 45, `${idx + 1}`) })
           .setLngLat([stop.lng, stop.lat])
           .addTo(mapRef.current!);
         markersRef.current.push(marker);

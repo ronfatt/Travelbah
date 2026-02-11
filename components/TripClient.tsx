@@ -6,27 +6,30 @@ import { MapView } from "@/components/MapView";
 import { ContextEvent, RoutePlan, TravelLanguage, TravelMode } from "@/lib/types";
 import { recapSummary } from "@/lib/prompt";
 
-const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: string }>> = {
+const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: string; userText: string }>> = {
   en: [
-    { key: "rain", label: "🌧️ Rain" },
-    { key: "traffic", label: "🚗 Traffic" },
-    { key: "tired", label: "💤 I'm tired" }
+    { key: "rain", label: "🌧️ Rain", userText: "Rain mode on." },
+    { key: "traffic", label: "🚗 Traffic", userText: "Traffic is getting heavy." },
+    { key: "tired", label: "💤 I'm tired", userText: "I need a lighter pace." }
   ],
   zh: [
-    { key: "rain", label: "🌧️ 下雨" },
-    { key: "traffic", label: "🚗 塞车" },
-    { key: "tired", label: "💤 我累了" }
+    { key: "rain", label: "🌧️ 下雨", userText: "切换到下雨场景。" },
+    { key: "traffic", label: "🚗 塞车", userText: "现在路上有点塞。" },
+    { key: "tired", label: "💤 我累了", userText: "我想走轻松一点。" }
   ],
   ms: [
-    { key: "rain", label: "🌧️ Hujan" },
-    { key: "traffic", label: "🚗 Trafik" },
-    { key: "tired", label: "💤 Saya penat" }
+    { key: "rain", label: "🌧️ Hujan", userText: "Aktifkan mod hujan." },
+    { key: "traffic", label: "🚗 Trafik", userText: "Trafik semakin sesak." },
+    { key: "tired", label: "💤 Saya penat", userText: "Saya mahu pace lebih ringan." }
   ]
 };
 
 const tripText: Record<TravelLanguage, Record<string, string>> = {
   en: {
-    route: "Route",
+    route: "Route Snapshot",
+    eta: "ETA",
+    stops: "Stops",
+    surprise: "Surprise",
     surpriseDrop: "Surprise Drop",
     fitsSegment: "fits this segment.",
     partner: "Recommended Partner",
@@ -34,46 +37,67 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     skip: "Skip",
     askPlaceholder: "Ask anything...",
     send: "Send",
-    endTrip: "End Trip & Generate Recap",
-    guide: "Guide",
-    you: "You",
-    added: "Added {name} to your active route.",
-    skipped: "Skipped {name}, route stays stable."
+    endTrip: "🎉 Generate My Journey Story",
+    added: "Added {name} to the route.",
+    skipped: "Skipped {name}, keep moving.",
+    simulate: "Simulate live changes",
+    modeAckFood: "You: Pick Food-first.",
+    modeAckChill: "You: Pick Chill mode.",
+    modeAckEfficient: "You: Pick Efficient mode.",
+    modeReply: "Got it. I'll line up 3 solid stops."
   },
   zh: {
-    route: "路线",
+    route: "路线快照",
+    eta: "预计到达",
+    stops: "停靠",
+    surprise: "惊喜",
     surpriseDrop: "惊喜推荐",
     fitsSegment: "适合这段行程。",
-    partner: "推荐合作伙伴",
+    partner: "Recommended Partner",
     addStop: "加入停靠",
     skip: "跳过",
     askPlaceholder: "随时问我...",
     send: "发送",
-    endTrip: "结束旅程并生成回忆卡",
-    guide: "向导",
-    you: "你",
-    added: "已把 {name} 加入当前路线。",
-    skipped: "已跳过 {name}，整体路线保持稳定。"
+    endTrip: "🎉 Generate My Journey Story",
+    added: "已把 {name} 加入路线。",
+    skipped: "已跳过 {name}，继续前进。",
+    simulate: "模拟实时变化",
+    modeAckFood: "你：选择 Food-first。",
+    modeAckChill: "你：选择 Chill。",
+    modeAckEfficient: "你：选择 Efficient。",
+    modeReply: "收到，我会排 3 个扎实停靠点。"
   },
   ms: {
-    route: "Laluan",
+    route: "Ringkasan Laluan",
+    eta: "Jangka Tiba",
+    stops: "Hentian",
+    surprise: "Surprise",
     surpriseDrop: "Cadangan Kejutan",
     fitsSegment: "sesuai untuk segmen ini.",
-    partner: "Rakan disyorkan",
+    partner: "Recommended Partner",
     addStop: "Tambah hentian",
     skip: "Lepas",
     askPlaceholder: "Tanya apa saja...",
     send: "Hantar",
-    endTrip: "Tamatkan Trip & Jana Recap",
-    guide: "Pemandu",
-    you: "Anda",
-    added: "{name} ditambah ke laluan aktif anda.",
-    skipped: "{name} dilepaskan, laluan kekal stabil."
+    endTrip: "🎉 Generate My Journey Story",
+    added: "{name} ditambah ke laluan.",
+    skipped: "{name} dilepaskan, teruskan perjalanan.",
+    simulate: "Simulasi perubahan langsung",
+    modeAckFood: "Anda: pilih Food-first.",
+    modeAckChill: "Anda: pilih Chill.",
+    modeAckEfficient: "Anda: pilih Efficient.",
+    modeReply: "Baik, saya susun 3 hentian yang mantap."
   }
 };
 
 function fillTemplate(template: string, name: string) {
   return template.replace("{name}", name);
+}
+
+function modeAck(mode: TravelMode, t: Record<string, string>) {
+  if (mode === "food") return t.modeAckFood;
+  if (mode === "chill") return t.modeAckChill;
+  return t.modeAckEfficient;
 }
 
 export function TripClient({
@@ -94,17 +118,33 @@ export function TripClient({
   const [loading, setLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [activeStops, setActiveStops] = useState(initialPlan.stops);
+
+  const t = tripText[language];
   const [chatLog, setChatLog] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
-    { role: "assistant", text: initialPlan.aiIntro },
+    { role: "assistant", text: `Airport to town, nice. ${initialPlan.aiIntro}` },
+    { role: "user", text: modeAck(mode, t) },
+    { role: "assistant", text: t.modeReply },
     { role: "assistant", text: initialPlan.strategy }
   ]);
 
-  const t = tripText[language];
   const surpriseShown = useMemo(() => Boolean(plan.surpriseDrop), [plan.surpriseDrop]);
+  const etaTime = useMemo(
+    () =>
+      new Date(Date.now() + plan.etaMinutes * 60_000).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
+    [plan.etaMinutes]
+  );
 
   async function triggerReplan(event: ContextEvent) {
     if (!event) return;
     setLoading(true);
+    const selected = eventLabels[language].find((x) => x.key === event);
+    if (selected) {
+      setChatLog((prev) => [...prev, { role: "user", text: selected.userText }]);
+    }
+
     const res = await fetch("/api/plan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -147,17 +187,18 @@ export function TripClient({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-      <section className="rounded-2xl border border-border bg-card/85 p-3 shadow-card">
+      <section className="glass-card rounded-2xl p-3 shadow-card">
         <MapView polyline={plan.polyline} origin={plan.origin} destination={plan.destination} stops={activeStops} />
       </section>
 
-      <section className="rounded-2xl border border-border bg-card/90 p-4 shadow-card">
+      <section className="glass-card rounded-2xl p-4 shadow-card">
+        <div className="mb-1 text-xs uppercase tracking-[0.08em] text-text-secondary">{t.simulate}</div>
         <div className="mb-3 flex flex-wrap gap-2">
           {eventLabels[language].map((btn) => (
             <button
               key={btn.key}
               type="button"
-              className="travelbah-lift rounded-full border border-border bg-card px-3 py-1 text-sm hover:bg-bg"
+              className="travelbah-lift rounded-full border border-border bg-white/75 px-3 py-1 text-sm hover:bg-white"
               onClick={() => triggerReplan(btn.key)}
               disabled={loading}
             >
@@ -166,17 +207,28 @@ export function TripClient({
           ))}
         </div>
 
-        <div className="mb-3 rounded-2xl border border-border bg-card p-3 text-sm">
+        <div className="mb-3 rounded-2xl border border-border bg-white/80 p-3 text-sm">
           <p className="font-semibold">{t.route}</p>
-          <p>
-            {plan.distanceKm} km · ~{plan.etaMinutes} mins
-          </p>
-          <p className="mt-1 text-text-secondary">{plan.strategy}</p>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+            <div className="rounded-xl bg-white/85 p-2 text-center">
+              <p>🟢 {t.eta}</p>
+              <p className="mt-1 font-semibold">{etaTime}</p>
+            </div>
+            <div className="rounded-xl bg-white/85 p-2 text-center">
+              <p>🟣 {t.stops}</p>
+              <p className="mt-1 font-semibold">{activeStops.length}</p>
+            </div>
+            <div className="rounded-xl bg-white/85 p-2 text-center">
+              <p>🔵 {t.surprise}</p>
+              <p className="mt-1 font-semibold">{plan.surpriseDrop ? "1" : "0"}</p>
+            </div>
+          </div>
+          <p className="mt-2 text-text-secondary">{plan.distanceKm} km · ~{plan.etaMinutes} mins</p>
         </div>
 
         {surpriseShown && plan.surpriseDrop ? (
-          <div className="mb-3 rounded-2xl border border-accent/50 bg-[#fff8ec] p-3 text-sm">
-            <p className="font-semibold">{t.surpriseDrop}</p>
+          <div className="mb-3 rounded-2xl border border-accent/50 bg-[#fff8ec] p-3 text-sm shadow-[0_0_0_1px_rgba(20,184,166,0.16),0_10px_24px_rgba(20,184,166,0.1)] animate-pulse">
+            <p className="font-semibold">⚡ {t.surpriseDrop}</p>
             <p>
               {plan.surpriseDrop.name} {t.fitsSegment}
             </p>
@@ -186,7 +238,7 @@ export function TripClient({
           </div>
         ) : null}
 
-        <div className="mb-3 max-h-52 overflow-auto rounded-2xl border border-border bg-card p-3">
+        <div className="mb-3 max-h-52 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
           {activeStops.map((stop) => (
             <div key={stop.id} className="mb-2 rounded-2xl border border-border p-2 text-sm transition-colors hover:bg-bg">
               <p className="font-medium">{stop.name}</p>
@@ -194,7 +246,9 @@ export function TripClient({
               <div className="mt-1 flex gap-2">
                 <button
                   className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
-                  onClick={() => setChatLog((prev) => [...prev, { role: "assistant", text: fillTemplate(t.added, stop.name) }])}
+                  onClick={() => {
+                    setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.added, stop.name) }]);
+                  }}
                 >
                   {t.addStop}
                 </button>
@@ -202,7 +256,7 @@ export function TripClient({
                   className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
                   onClick={() => {
                     setActiveStops((prev) => prev.filter((s) => s.id !== stop.id));
-                    setChatLog((prev) => [...prev, { role: "assistant", text: fillTemplate(t.skipped, stop.name) }]);
+                    setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.skipped, stop.name) }]);
                   }}
                 >
                   {t.skip}
@@ -212,11 +266,17 @@ export function TripClient({
           ))}
         </div>
 
-        <div className="mb-2 max-h-56 overflow-auto rounded-2xl border border-border bg-card p-3">
+        <div className="mb-2 max-h-56 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
           {chatLog.map((line, idx) => (
-            <p key={idx} className={`mb-2 text-sm ${line.role === "assistant" ? "text-text-primary" : "text-primary"}`}>
-              <span className="font-semibold">{line.role === "assistant" ? t.guide : t.you}:</span> {line.text}
-            </p>
+            <div key={idx} className={`mb-2 flex ${line.role === "assistant" ? "justify-start" : "justify-end"}`}>
+              <div
+                className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${
+                  line.role === "assistant" ? "bg-white text-text-primary border border-border" : "gradient-primary text-white"
+                }`}
+              >
+                {line.text}
+              </div>
+            </div>
           ))}
         </div>
 
@@ -233,7 +293,7 @@ export function TripClient({
           </button>
         </div>
 
-        <button onClick={finishTrip} className="travelbah-lift mt-3 w-full rounded-[18px] bg-primary-dark px-4 py-3 font-semibold text-white hover:bg-primary">
+        <button onClick={finishTrip} className="travelbah-lift gradient-primary-flow gradient-primary mt-3 w-full rounded-full px-4 py-3 font-semibold text-white">
           {t.endTrip}
         </button>
       </section>
