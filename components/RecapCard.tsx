@@ -32,6 +32,40 @@ function moodLine(mode: TravelMode) {
   return "⚡ Efficient Sprint";
 }
 
+function headlineFor(mode: TravelMode, stops: Poi[], surpriseCount: number) {
+  const poolByMode: Record<TravelMode, string[]> = {
+    food: [
+      "Landed hungry. Left legendary.",
+      "Runway in, flavor out.",
+      "Checked in hungry. Checked out iconic."
+    ],
+    chill: [
+      "Smooth miles. Slow bites.",
+      "Easy route, real moments.",
+      "Slow pace. Solid memories."
+    ],
+    efficient: [
+      "Fast lane, full flavor.",
+      "No detours. All payoff.",
+      "Smart route. Zero wasted time."
+    ]
+  };
+  const hook = surpriseCount > 0 ? "⚡ Surprise locked in." : "";
+  const seed = stops.map((s) => s.id).join("|") + mode;
+  const pick = poolByMode[mode][seededIndex(seed, poolByMode[mode].length)];
+  return hook ? `${pick} ${hook}` : pick;
+}
+
+function aiSummaryByMode(mode: TravelMode, stopCount: number) {
+  if (mode === "food") {
+    return `You landed hungry, and left with ${stopCount} solid local flavors locked in.`;
+  }
+  if (mode === "chill") {
+    return "Smooth ride, slow bites, no rush.";
+  }
+  return "Straight route, smart stops, zero wasted time.";
+}
+
 export function RecapCard({
   origin,
   destination,
@@ -58,10 +92,10 @@ export function RecapCard({
   const [showShareMenu, setShowShareMenu] = useState(false);
 
   const aiLine = useMemo(
-    () =>
-      `You landed hungry, and left with ${stops.length} solid local flavors locked in. Classic Tawau move, bah.`,
-    [stops.length]
+    () => aiSummaryByMode(mode, stops.length),
+    [mode, stops.length]
   );
+  const headline = useMemo(() => headlineFor(mode, stops, surpriseCount ?? 0), [mode, stops, surpriseCount]);
 
   async function captureAndDownload(ref: HTMLDivElement | null, fileName: string) {
     if (!ref) return;
@@ -99,12 +133,12 @@ export function RecapCard({
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-text-secondary">TravelBah Journey Story</p>
-              <h2 className="mt-1 text-[1.5rem] font-extrabold leading-tight text-text-primary">From runway to real flavors.</h2>
+              <h2 className="mt-1 text-[1.5rem] font-extrabold leading-tight text-text-primary">{headline}</h2>
               <p className="mt-1 text-[11px] font-semibold text-[#4f46e5]">Journey Mood: {moodLine(mode)}</p>
               <p className="mt-1 text-xs text-text-secondary">
                 {origin} → {destination}
                 <br />
-                {stops.length} local stops · {surpriseCount ?? 0} surprise
+                {stops.length} stops · {surpriseCount ?? 0} surprise
               </p>
             </div>
             <span className="rounded-full border border-white/80 bg-white/70 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">TravelBah · Tawau Edition</span>
@@ -117,7 +151,15 @@ export function RecapCard({
               <div className="h-40 bg-gradient-to-r from-[#4f46e5] via-[#6366f1] to-[#14b8a6]" />
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/45 via-transparent to-transparent" />
-            <p className="absolute bottom-2 left-3 text-[10px] font-medium text-white/90">TravelBah watermark</p>
+            <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
+            <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90">TravelBah watermark</p>
+            <div className="absolute bottom-2 left-3 flex gap-1">
+              {stops.slice(0, 3).map((s, idx) => (
+                <span key={s.id} className="rounded-full bg-[#4f46e5]/85 px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {idx + 1}
+                </span>
+              ))}
+            </div>
             <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90">TravelBah · Tawau Edition</p>
           </div>
 
@@ -157,7 +199,7 @@ export function RecapCard({
           </div>
 
           <div className="mt-2 border-t border-border/60 pt-2 text-center text-[10px] text-text-secondary">
-            TravelBah · AI Local Guide
+            AI Local Guide · TravelBah
             <br />
             travelbah.app
           </div>
@@ -175,28 +217,28 @@ export function RecapCard({
 
       {showShareMenu ? (
         <div className="mx-auto mt-3 grid w-full max-w-[440px] grid-cols-2 gap-2 rounded-2xl border border-border bg-white/85 p-3 text-sm">
-          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadPng}>Instagram (vertical)</button>
-          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadStoryPng}>Story 9:16</button>
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadStoryPng}>📱 Instagram Story</button>
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={downloadPng}>📷 Instagram Post</button>
           <button
             className="travelbah-lift rounded-xl border border-border px-2 py-2"
             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`TravelBah Journey Story\n${window.location.href}`)}`, "_blank")}
           >
-            WhatsApp
+            💬 WhatsApp
           </button>
-          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={copyLink}>Copy Link</button>
+          <button className="travelbah-lift rounded-xl border border-border px-2 py-2" onClick={copyLink}>🔗 Copy Link</button>
         </div>
       ) : null}
 
       <div className="pointer-events-none absolute -left-[9999px] top-0">
         <div ref={storyRef} className="h-[640px] w-[360px] overflow-hidden rounded-[24px] bg-gradient-to-b from-[#eef2ff] to-white p-4">
           <h3 className="text-sm uppercase tracking-[0.18em] text-text-secondary">TravelBah Journey Story</h3>
-          <p className="mt-2 text-2xl font-extrabold text-text-primary">From runway to real flavors.</p>
+          <p className="mt-2 text-2xl font-extrabold text-text-primary">{headline}</p>
           <p className="mt-2 text-sm text-[#4f46e5]">{moodLine(mode)}</p>
           <div className="mt-3 overflow-hidden rounded-2xl">
             {staticMapUrl ? <img src={staticMapUrl} alt="Story map" className="h-52 w-full object-cover" /> : <div className="h-52 bg-gradient-to-r from-[#4f46e5] to-[#14b8a6]" />}
           </div>
           <p className="mt-3 text-sm text-text-secondary">{aiLine}</p>
-          <div className="mt-4 text-xs text-text-secondary">TravelBah · AI Local Guide · travelbah.app</div>
+          <div className="mt-4 text-xs text-text-secondary">AI Local Guide · TravelBah · travelbah.app</div>
         </div>
       </div>
     </div>
