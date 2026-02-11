@@ -63,6 +63,10 @@ button:disabled {
   background: var(--color-accent);
 }
 
+.travelbah-marker--surprise {
+  background: #8b5cf6;
+}
+
 @keyframes marker-bounce {
   0%,
   100% {
@@ -203,5 +207,25 @@ button:disabled {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.status-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.status-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.58) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: status-scan 1.4s ease-in-out infinite;
+}
+
+@keyframes status-scan {
+  to {
+    transform: translateX(100%);
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapView } from "@/components/MapView";
 import { ContextEvent, RoutePlan, TravelLanguage, TravelMode } from "@/lib/types";
@@ -8,17 +8,17 @@ import { recapSummary } from "@/lib/prompt";
 
 const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: string; userText: string }>> = {
   en: [
-    { key: "rain", label: "🌧️ Rain", userText: "Rain mode on." },
-    { key: "traffic", label: "🚗 Traffic", userText: "Traffic is getting heavy." },
+    { key: "rain", label: "🌧 Rain", userText: "Rain detected." },
+    { key: "traffic", label: "🚗 Traffic", userText: "Traffic is building up." },
     { key: "tired", label: "💤 I'm tired", userText: "I need a lighter pace." }
   ],
   zh: [
-    { key: "rain", label: "🌧️ 下雨", userText: "切换到下雨场景。" },
-    { key: "traffic", label: "🚗 塞车", userText: "现在路上有点塞。" },
+    { key: "rain", label: "🌧 下雨", userText: "下雨了。" },
+    { key: "traffic", label: "🚗 塞车", userText: "有点塞车。" },
     { key: "tired", label: "💤 我累了", userText: "我想走轻松一点。" }
   ],
   ms: [
-    { key: "rain", label: "🌧️ Hujan", userText: "Aktifkan mod hujan." },
+    { key: "rain", label: "🌧 Hujan", userText: "Hujan dikesan." },
     { key: "traffic", label: "🚗 Trafik", userText: "Trafik semakin sesak." },
     { key: "tired", label: "💤 Saya penat", userText: "Saya mahu pace lebih ringan." }
   ]
@@ -26,6 +26,10 @@ const eventLabels: Record<TravelLanguage, Array<{ key: ContextEvent; label: stri
 
 const tripText: Record<TravelLanguage, Record<string, string>> = {
   en: {
+    optimizing: "TravelBah is optimizing your route",
+    routeLocked: "✓ Route locked",
+    stopsFound: "✓ {n} stops found",
+    surpriseAdded: "✓ {n} surprise added",
     route: "Route Snapshot",
     eta: "ETA",
     stops: "Stops",
@@ -33,20 +37,28 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     surpriseDrop: "Surprise Drop",
     fitsSegment: "fits this segment.",
     partner: "Recommended Partner",
-    addStop: "Add stop",
+    addStop: "Add Stop",
     skip: "Skip",
-    askPlaceholder: "Ask anything...",
-    send: "Send",
+    askPlaceholder: "Any sunset spots nearby?",
+    ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
-    added: "Added {name} to the route.",
-    skipped: "Skipped {name}, keep moving.",
-    simulate: "Simulate live changes",
-    modeAckFood: "You: Pick Food-first.",
-    modeAckChill: "You: Pick Chill mode.",
-    modeAckEfficient: "You: Pick Efficient mode.",
-    modeReply: "Got it. I'll line up 3 solid stops."
+    storyHint: "Create a shareable recap of today's route.",
+    added: "Added {name}. ETA extended by 12 mins.",
+    skipped: "Skipped {name}, route stays fast.",
+    simulate: "Simulate real-time changes",
+    modeAckFood: "You picked Food-first.",
+    modeAckChill: "You picked Chill mode.",
+    modeAckEfficient: "You picked Efficient mode.",
+    modeReply: "Airport to town, nice. I will lock in 3 solid local stops.",
+    rainReply: "Rain detected. Switching first stop to indoor seating.",
+    trafficReply: "Traffic detected. Reordering stops to reduce detour.",
+    tiredReply: "Fatigue detected. Moving rest-friendly stop earlier."
   },
   zh: {
+    optimizing: "TravelBah 正在优化你的路线",
+    routeLocked: "✓ 路线已锁定",
+    stopsFound: "✓ 找到 {n} 个停靠点",
+    surpriseAdded: "✓ 已加入 {n} 个惊喜点",
     route: "路线快照",
     eta: "预计到达",
     stops: "停靠",
@@ -56,18 +68,26 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     partner: "Recommended Partner",
     addStop: "加入停靠",
     skip: "跳过",
-    askPlaceholder: "随时问我...",
-    send: "发送",
+    askPlaceholder: "附近有 sunset 拍照点吗？",
+    ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
-    added: "已把 {name} 加入路线。",
-    skipped: "已跳过 {name}，继续前进。",
-    simulate: "模拟实时变化",
-    modeAckFood: "你：选择 Food-first。",
-    modeAckChill: "你：选择 Chill。",
-    modeAckEfficient: "你：选择 Efficient。",
-    modeReply: "收到，我会排 3 个扎实停靠点。"
+    storyHint: "Create a shareable recap of today's route.",
+    added: "已加入 {name}，预计延长 12 分钟。",
+    skipped: "已跳过 {name}，路线保持高效。",
+    simulate: "Simulate real-time changes",
+    modeAckFood: "你选择了 Food-first。",
+    modeAckChill: "你选择了 Chill。",
+    modeAckEfficient: "你选择了 Efficient。",
+    modeReply: "机场到市区，没问题。我先锁定 3 个在地好点。",
+    rainReply: "检测到下雨，第一站改成有室内座位。",
+    trafficReply: "检测到塞车，重新排序减少绕路。",
+    tiredReply: "检测到疲劳，先安排更好休息的点。"
   },
   ms: {
+    optimizing: "TravelBah sedang optimumkan laluan anda",
+    routeLocked: "✓ Laluan dikunci",
+    stopsFound: "✓ {n} hentian ditemui",
+    surpriseAdded: "✓ {n} surprise ditambah",
     route: "Ringkasan Laluan",
     eta: "Jangka Tiba",
     stops: "Hentian",
@@ -75,23 +95,27 @@ const tripText: Record<TravelLanguage, Record<string, string>> = {
     surpriseDrop: "Cadangan Kejutan",
     fitsSegment: "sesuai untuk segmen ini.",
     partner: "Recommended Partner",
-    addStop: "Tambah hentian",
+    addStop: "Tambah",
     skip: "Lepas",
-    askPlaceholder: "Tanya apa saja...",
-    send: "Hantar",
+    askPlaceholder: "Ada spot sunset berdekatan?",
+    ask: "Ask",
     endTrip: "🎉 Generate My Journey Story",
-    added: "{name} ditambah ke laluan.",
-    skipped: "{name} dilepaskan, teruskan perjalanan.",
-    simulate: "Simulasi perubahan langsung",
-    modeAckFood: "Anda: pilih Food-first.",
-    modeAckChill: "Anda: pilih Chill.",
-    modeAckEfficient: "Anda: pilih Efficient.",
-    modeReply: "Baik, saya susun 3 hentian yang mantap."
+    storyHint: "Create a shareable recap of today's route.",
+    added: "{name} ditambah. ETA bertambah 12 minit.",
+    skipped: "{name} dilepas, laluan kekal laju.",
+    simulate: "Simulate real-time changes",
+    modeAckFood: "Anda pilih Food-first.",
+    modeAckChill: "Anda pilih Chill.",
+    modeAckEfficient: "Anda pilih Efficient.",
+    modeReply: "Airport ke town, baik. Saya kunci 3 hentian tempatan yang mantap.",
+    rainReply: "Hujan dikesan. Hentian pertama ditukar ke tempat duduk dalaman.",
+    trafficReply: "Trafik dikesan. Susun semula hentian untuk kurangkan lencongan.",
+    tiredReply: "Keletihan dikesan. Hentian rehat dipercepatkan."
   }
 };
 
-function fillTemplate(template: string, name: string) {
-  return template.replace("{name}", name);
+function fillTemplate(template: string, vars: Record<string, string>) {
+  return Object.entries(vars).reduce((acc, [k, v]) => acc.replace(`{${k}}`, v), template);
 }
 
 function modeAck(mode: TravelMode, t: Record<string, string>) {
@@ -118,14 +142,19 @@ export function TripClient({
   const [loading, setLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [activeStops, setActiveStops] = useState(initialPlan.stops);
+  const [engineRunning, setEngineRunning] = useState(true);
 
   const t = tripText[language];
   const [chatLog, setChatLog] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
-    { role: "assistant", text: `Airport to town, nice. ${initialPlan.aiIntro}` },
+    { role: "assistant", text: "Airport to town, nice." },
     { role: "user", text: modeAck(mode, t) },
-    { role: "assistant", text: t.modeReply },
-    { role: "assistant", text: initialPlan.strategy }
+    { role: "assistant", text: t.modeReply }
   ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setEngineRunning(false), 1100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const surpriseShown = useMemo(() => Boolean(plan.surpriseDrop), [plan.surpriseDrop]);
   const etaTime = useMemo(
@@ -140,6 +169,8 @@ export function TripClient({
   async function triggerReplan(event: ContextEvent) {
     if (!event) return;
     setLoading(true);
+    setEngineRunning(true);
+
     const selected = eventLabels[language].find((x) => x.key === event);
     if (selected) {
       setChatLog((prev) => [...prev, { role: "user", text: selected.userText }]);
@@ -153,8 +184,13 @@ export function TripClient({
     const nextPlan = (await res.json()) as RoutePlan;
     setPlan(nextPlan);
     setActiveStops(nextPlan.stops);
-    setChatLog((prev) => [...prev, { role: "assistant", text: nextPlan.strategy }]);
+
+    const aiReply =
+      event === "rain" ? t.rainReply : event === "traffic" ? t.trafficReply : t.tiredReply;
+    setChatLog((prev) => [...prev, { role: "assistant", text: aiReply }]);
+
     setLoading(false);
+    setTimeout(() => setEngineRunning(false), 900);
   }
 
   async function sendChat() {
@@ -186,117 +222,146 @@ export function TripClient({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-      <section className="glass-card rounded-2xl p-3 shadow-card">
-        <MapView polyline={plan.polyline} origin={plan.origin} destination={plan.destination} stops={activeStops} />
+    <div className="space-y-4">
+      <section className={`glass-card rounded-2xl px-4 py-3 ${engineRunning ? "status-shimmer" : ""}`}>
+        <p className="text-sm font-semibold text-text-primary">
+          🧠 {t.optimizing}
+          {engineRunning ? "..." : ""}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{t.routeLocked}</span>
+          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{fillTemplate(t.stopsFound, { n: String(activeStops.length) })}</span>
+          <span className="rounded-full border border-border bg-white/75 px-2 py-1">{fillTemplate(t.surpriseAdded, { n: plan.surpriseDrop ? "1" : "0" })}</span>
+        </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-4 shadow-card">
-        <div className="mb-1 text-xs uppercase tracking-[0.08em] text-text-secondary">{t.simulate}</div>
-        <div className="mb-3 flex flex-wrap gap-2">
-          {eventLabels[language].map((btn) => (
-            <button
-              key={btn.key}
-              type="button"
-              className="travelbah-lift rounded-full border border-border bg-white/75 px-3 py-1 text-sm hover:bg-white"
-              onClick={() => triggerReplan(btn.key)}
-              disabled={loading}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <section className={`glass-card relative rounded-2xl p-3 shadow-card ${loading ? "opacity-95" : ""}`}>
+          <div className="absolute left-6 top-6 z-10 rounded-2xl border border-border bg-white/85 px-3 py-2 text-xs shadow-card">
+            <p>🚗 {plan.distanceKm} km · {plan.etaMinutes} mins</p>
+            <p>🍜 {activeStops.length} Food Stops</p>
+            <p>⚡ {plan.surpriseDrop ? "1" : "0"} Surprise</p>
+          </div>
+          <MapView polyline={plan.polyline} origin={plan.origin} destination={plan.destination} stops={activeStops} surprise={plan.surpriseDrop} />
+        </section>
 
-        <div className="mb-3 rounded-2xl border border-border bg-white/80 p-3 text-sm">
-          <p className="font-semibold">{t.route}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-            <div className="rounded-xl bg-white/85 p-2 text-center">
-              <p>🟢 {t.eta}</p>
-              <p className="mt-1 font-semibold">{etaTime}</p>
-            </div>
-            <div className="rounded-xl bg-white/85 p-2 text-center">
-              <p>🟣 {t.stops}</p>
-              <p className="mt-1 font-semibold">{activeStops.length}</p>
-            </div>
-            <div className="rounded-xl bg-white/85 p-2 text-center">
-              <p>🔵 {t.surprise}</p>
-              <p className="mt-1 font-semibold">{plan.surpriseDrop ? "1" : "0"}</p>
+        <section className="glass-card rounded-2xl p-4 shadow-card">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {eventLabels[language].map((btn) => (
+              <button
+                key={btn.key}
+                type="button"
+                className="travelbah-lift rounded-full border border-border bg-white/75 px-3 py-1 text-sm hover:bg-white"
+                onClick={() => triggerReplan(btn.key)}
+                disabled={loading}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+          <div className="mb-3 text-xs text-text-secondary">{t.simulate}</div>
+
+          <div className="mb-3 rounded-2xl border border-border bg-white/80 p-3 text-sm">
+            <p className="font-semibold">{t.route}</p>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+              <div className="rounded-xl bg-white/85 p-2 text-center">
+                <p>🟢 {t.eta}</p>
+                <p className="mt-1 font-semibold">{etaTime}</p>
+              </div>
+              <div className="rounded-xl bg-white/85 p-2 text-center">
+                <p>🟣 {t.stops}</p>
+                <p className="mt-1 font-semibold">{activeStops.length}</p>
+              </div>
+              <div className="rounded-xl bg-white/85 p-2 text-center">
+                <p>🔵 {t.surprise}</p>
+                <p className="mt-1 font-semibold">{plan.surpriseDrop ? "1" : "0"}</p>
+              </div>
             </div>
           </div>
-          <p className="mt-2 text-text-secondary">{plan.distanceKm} km · ~{plan.etaMinutes} mins</p>
-        </div>
 
-        {surpriseShown && plan.surpriseDrop ? (
-          <div className="mb-3 rounded-2xl border border-accent/50 bg-[#fff8ec] p-3 text-sm shadow-[0_0_0_1px_rgba(20,184,166,0.16),0_10px_24px_rgba(20,184,166,0.1)] animate-pulse">
-            <p className="font-semibold">⚡ {t.surpriseDrop}</p>
-            <p>
-              {plan.surpriseDrop.name} {t.fitsSegment}
-            </p>
-            {plan.surpriseDrop.partner_level === "partner" && (
-              <span className="mt-1 inline-block rounded-[8px] bg-accent px-2 py-1 text-[0.75rem] text-white">{t.partner}</span>
-            )}
-          </div>
-        ) : null}
-
-        <div className="mb-3 max-h-52 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
-          {activeStops.map((stop) => (
-            <div key={stop.id} className="mb-2 rounded-2xl border border-border p-2 text-sm transition-colors hover:bg-bg">
-              <p className="font-medium">{stop.name}</p>
-              <p className="text-text-secondary">{stop.short_desc}</p>
-              <div className="mt-1 flex gap-2">
+          {surpriseShown && plan.surpriseDrop ? (
+            <div className="mb-3 rounded-2xl border border-accent/50 bg-[#fff8ec] p-3 text-sm transition-shadow hover:shadow-[0_0_0_1px_rgba(20,184,166,0.16),0_10px_24px_rgba(20,184,166,0.12)]">
+              <p className="font-semibold">⚡ {t.surpriseDrop}</p>
+              <p>
+                {plan.surpriseDrop.name} {t.fitsSegment}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="inline-block rounded-[8px] bg-accent px-2 py-1 text-[0.75rem] text-white">{t.partner}</span>
                 <button
-                  className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
-                  onClick={() => {
-                    setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.added, stop.name) }]);
-                  }}
+                  className="travelbah-lift rounded border border-border bg-white px-2 py-0.5 text-xs"
+                  onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${plan.surpriseDrop!.name}` }, { role: "assistant", text: fillTemplate(t.added, { name: plan.surpriseDrop!.name }) }])}
                 >
                   {t.addStop}
                 </button>
                 <button
-                  className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
-                  onClick={() => {
-                    setActiveStops((prev) => prev.filter((s) => s.id !== stop.id));
-                    setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.skipped, stop.name) }]);
-                  }}
+                  className="travelbah-lift rounded border border-border bg-white px-2 py-0.5 text-xs"
+                  onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${plan.surpriseDrop!.name}` }, { role: "assistant", text: fillTemplate(t.skipped, { name: plan.surpriseDrop!.name }) }])}
                 >
                   {t.skip}
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          ) : null}
 
-        <div className="mb-2 max-h-56 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
-          {chatLog.map((line, idx) => (
-            <div key={idx} className={`mb-2 flex ${line.role === "assistant" ? "justify-start" : "justify-end"}`}>
-              <div
-                className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${
-                  line.role === "assistant" ? "bg-white text-text-primary border border-border" : "gradient-primary text-white"
-                }`}
-              >
-                {line.text}
+          <div className="mb-3 max-h-52 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
+            {activeStops.map((stop, idx) => (
+              <div key={stop.id} className="mb-2 rounded-2xl border border-border p-2 text-sm transition-colors hover:bg-bg">
+                <p className="font-medium">{idx + 1}. {stop.name}</p>
+                <p className="text-text-secondary">{stop.short_desc}</p>
+                <div className="mt-1 flex gap-2">
+                  <button
+                    className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
+                    onClick={() => setChatLog((prev) => [...prev, { role: "user", text: `${t.addStop}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.added, { name: stop.name }) }])}
+                  >
+                    {t.addStop}
+                  </button>
+                  <button
+                    className="travelbah-lift rounded border border-border px-2 py-0.5 text-xs"
+                    onClick={() => {
+                      setActiveStops((prev) => prev.filter((s) => s.id !== stop.id));
+                      setChatLog((prev) => [...prev, { role: "user", text: `${t.skip}: ${stop.name}` }, { role: "assistant", text: fillTemplate(t.skipped, { name: stop.name }) }]);
+                    }}
+                  >
+                    {t.skip}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="flex gap-2">
-          <input
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendChat()}
-            placeholder={t.askPlaceholder}
-            className="flex-1 rounded-[14px] border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(22,94,99,0.12)]"
-          />
-          <button onClick={sendChat} className="travelbah-lift rounded-[14px] bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
-            {t.send}
+          <div className="mb-2 max-h-56 overflow-auto rounded-2xl border border-border bg-white/80 p-3">
+            {chatLog.map((line, idx) => (
+              <div key={idx} className={`mb-2 flex ${line.role === "assistant" ? "justify-start" : "justify-end"}`}>
+                <div
+                  className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${
+                    line.role === "assistant" ? "border border-border bg-white text-text-primary" : "gradient-primary text-white"
+                  }`}
+                >
+                  {line.text}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendChat()}
+              placeholder={t.askPlaceholder}
+              className="flex-1 rounded-[14px] border border-border px-3 py-2 text-sm outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_4px_rgba(79,70,229,0.12)]"
+            />
+            <button onClick={sendChat} className="travelbah-lift rounded-[14px] bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+              {t.ask}
+            </button>
+          </div>
+
+          <button onClick={finishTrip} className="travelbah-lift gradient-primary-flow gradient-primary mt-3 w-full rounded-full px-4 py-3 font-semibold text-white">
+            {t.endTrip}
           </button>
-        </div>
-
-        <button onClick={finishTrip} className="travelbah-lift gradient-primary-flow gradient-primary mt-3 w-full rounded-full px-4 py-3 font-semibold text-white">
-          {t.endTrip}
-        </button>
-      </section>
+          <p className="mt-2 text-center text-xs text-text-secondary">{t.storyHint}</p>
+        </section>
+      </div>
     </div>
   );
 }

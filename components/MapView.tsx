@@ -9,9 +9,10 @@ type Props = {
   origin: [number, number];
   destination: [number, number];
   stops: Poi[];
+  surprise?: Poi;
 };
 
-export function MapView({ polyline, origin, destination, stops }: Props) {
+export function MapView({ polyline, origin, destination, stops, surprise }: Props) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -64,7 +65,7 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
         }
       });
 
-      const createMarkerElement = (kind: "origin" | "destination" | "stop", delayMs = 0, label?: string) => {
+      const createMarkerElement = (kind: "origin" | "destination" | "stop" | "surprise", delayMs = 0, label?: string) => {
         const el = document.createElement("div");
         el.className = `travelbah-marker travelbah-marker--${kind}`;
         el.style.animationDelay = `${delayMs}ms`;
@@ -91,6 +92,12 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
           .addTo(mapRef.current!);
         markersRef.current.push(marker);
       });
+      if (surprise) {
+        const surpriseMarker = new mapboxgl.Marker({ element: createMarkerElement("surprise", 180, "⚡") })
+          .setLngLat([surprise.lng, surprise.lat])
+          .addTo(mapRef.current);
+        markersRef.current.push(surpriseMarker);
+      }
 
       const bounds = new mapboxgl.LngLatBounds();
       [origin, destination, ...polyline].forEach((coord) => bounds.extend(coord));
@@ -103,7 +110,7 @@ export function MapView({ polyline, origin, destination, stops }: Props) {
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [token, origin, destination, polyline, stops]);
+  }, [token, origin, destination, polyline, stops, surprise]);
 
   if (!token) {
     return (
