@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f6efe0;
+  --fg: #1f2937;
+}
+
+body {
+  background: radial-gradient(circle at top right, #ffdbc6 0%, #f6efe0 35%, #e6f2f7 100%);
+  color: var(--fg);
+  min-height: 100vh;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
