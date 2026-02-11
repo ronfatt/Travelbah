@@ -10,6 +10,9 @@ type RecapPayload = {
   stops: Poi[];
   summary: string;
   polyline: [number, number][];
+  distanceKm?: number;
+  etaMinutes?: number;
+  surpriseDrop?: Poi;
 };
 
 export default function RecapPage() {
@@ -32,13 +35,22 @@ export default function RecapPage() {
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const path = encodeURIComponent(data.polyline.map((p) => `${p[0]},${p[1]}`).join(";"));
   const staticMapUrl = token
-    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-4+f78a4d(${path})/117.89,4.25,9/900x400?access_token=${token}`
+    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-7+4f46e5(${path})/117.89,4.25,9/900x600?access_token=${token}`
     : undefined;
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-      <h1 className="mb-4 text-2xl font-bold">Trip Recap</h1>
-      <RecapCard origin={data.origin} destination={data.destination} stops={data.stops} summary={data.summary} staticMapUrl={staticMapUrl} />
+      <h1 className="mb-4 text-2xl font-bold">TravelBah Journey Story</h1>
+      <RecapCard
+        origin={data.origin}
+        destination={data.destination}
+        stops={data.stops}
+        summary={data.summary}
+        staticMapUrl={staticMapUrl}
+        distanceKm={data.distanceKm}
+        etaMinutes={data.etaMinutes}
+        surpriseCount={data.surpriseDrop ? 1 : 0}
+      />
     </main>
   );
 }
