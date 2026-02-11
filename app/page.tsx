@@ -10,6 +10,12 @@ import { modeLabel } from "@/lib/prompt";
 const languageOptions: TravelLanguage[] = ["en", "zh", "ms"];
 const upcomingModules = [
   {
+    emoji: "📸",
+    title: "景点",
+    desc: "Scenic and photo-friendly spots",
+    status: "Coming soon · 还没开放"
+  },
+  {
     emoji: "🏨",
     title: "Stay",
     desc: "Smart stay picks near your route",
