@@ -208,6 +208,7 @@ export function RecapCard({
                     </defs>
                     <path d={routePreview.path} stroke="#ffffff" strokeWidth="10" strokeOpacity="0.45" fill="none" />
                     <path d={routePreview.path} stroke="url(#routeGrad)" strokeWidth="5.5" fill="none" />
+                    <path d={routePreview.path} stroke="#ffffff" strokeWidth="2.5" strokeDasharray="8 8" strokeOpacity="0.8" fill="none" />
                     {stops.slice(0, 6).map((s, idx) => {
                       const p =
                         routePreview.xy[
@@ -231,10 +232,28 @@ export function RecapCard({
                 ) : (
                   <div className="flex h-full items-center justify-center text-xs font-semibold text-white/85">Route preview unavailable</div>
                 )}
+                {routePreview ? (
+                  <>
+                    {routePreview.xy
+                      .filter((_, i) => i % Math.max(1, Math.floor(routePreview.xy.length / 34)) === 0)
+                      .map((p, i) => (
+                        <span
+                          key={`dot-${i}`}
+                          className="absolute h-1.5 w-1.5 rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                          style={{ left: `${(p[0] / routePreview.w) * 100}%`, top: `${(p[1] / routePreview.h) * 100}%` }}
+                        />
+                      ))}
+                  </>
+                ) : null}
               </div>
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f172a]/52 via-[#0f172a]/12 to-transparent" />
             <span className="absolute left-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#4f46e5]">AI-curated route</span>
+            {routePreview ? (
+              <span className="absolute right-2 top-2 rounded-full bg-black/30 px-2 py-1 text-[10px] font-semibold text-white">
+                fallback route · pts {routePreview.xy.length}
+              </span>
+            ) : null}
             <p className="absolute left-3 top-9 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah watermark</p>
             <p className="absolute bottom-2 right-3 text-[10px] font-medium text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">TravelBah · Tawau Edition</p>
           </div>
