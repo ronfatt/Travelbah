@@ -16,17 +16,17 @@ export function ModePicker({ value, onChange }: { value: TravelMode; onChange: (
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`travelbah-lift rounded-2xl border px-4 py-4 text-left transition-colors ${
+          className={`mode-option-card travelbah-lift rounded-[20px] border px-5 py-5 text-left ${
             value === opt.value
-              ? "border-transparent text-white shadow-glow gradient-primary"
+              ? `mode-option-card--active mode-option-card--${opt.value}`
               : "mode-card text-text-primary"
           }`}
         >
           <p className="text-base font-semibold">
-            <span className="mr-2">{opt.emoji}</span>
+            <span className={`mr-2 inline-block transition-transform duration-300 ${value === opt.value ? "scale-[1.12]" : ""}`}>{opt.emoji}</span>
             {opt.label}
           </p>
-          <p className={`mt-1 text-xs ${value === opt.value ? "text-white/90" : "text-text-secondary"}`}>{opt.desc}</p>
+          <p className={`mt-1 text-xs ${value === opt.value ? "text-white/95" : "text-text-secondary"}`}>{opt.desc}</p>
         </button>
       ))}
     </div>

@@ -3,9 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --color-primary-dark: #3730a3;
-  --color-primary: #4f46e5;
-  --color-accent: #14b8a6;
+  --color-primary-dark: #3a54ea;
+  --color-primary: #4f6dff;
+  --color-accent: #1bc7a8;
+  --color-energy: #ff8a3d;
   --color-bg: #f8faff;
   --color-card: rgba(255, 255, 255, 0.75);
   --color-border: rgba(255, 255, 255, 0.58);
@@ -156,6 +157,7 @@ button:disabled {
 .mode-card {
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.72);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.25s ease, background-color 0.25s ease;
 }
 
 .mode-card:hover {
@@ -164,6 +166,71 @@ button:disabled {
     linear-gradient(rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.86)) padding-box,
     linear-gradient(90deg, #4f46e5, #14b8a6) border-box;
   box-shadow: 0 8px 20px rgba(79, 70, 229, 0.16);
+  transform: translateY(-4px);
+}
+
+.mode-option-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.mode-option-card:hover {
+  transform: translateY(-4px);
+}
+
+.mode-option-card--active {
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(79, 109, 255, 0.26), 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+}
+
+.mode-option-card--food {
+  background: linear-gradient(135deg, #6f57ff 0%, #ff6eb4 100%);
+}
+
+.mode-option-card--chill {
+  background: linear-gradient(135deg, #7fb9ff 0%, #4f6dff 100%);
+}
+
+.mode-option-card--efficient {
+  background: linear-gradient(135deg, #ffb56b 0%, #ff8a3d 100%);
+}
+
+.hero-vibe-card {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.92)),
+    linear-gradient(135deg, rgba(91, 95, 255, 0.2) 0%, rgba(106, 156, 255, 0.2) 30%, rgba(34, 199, 165, 0.2) 70%, rgba(255, 209, 102, 0.2) 100%);
+}
+
+.hero-vibe-icon {
+  position: absolute;
+  color: rgba(30, 64, 175, 0.08);
+  user-select: none;
+  pointer-events: none;
+}
+
+.hero-vibe-icon--plane {
+  top: 14%;
+  right: 10%;
+  font-size: 1rem;
+  transform: rotate(14deg);
+}
+
+.hero-vibe-icon--mountain {
+  bottom: 18%;
+  left: 6%;
+  font-size: 1.15rem;
+}
+
+.hero-vibe-icon--wave {
+  bottom: 14%;
+  right: 16%;
+  font-size: 1rem;
+}
+
+.hero-vibe-icon--sun {
+  top: 20%;
+  left: 44%;
+  font-size: 1rem;
 }
 
 .ask-fab {
